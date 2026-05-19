@@ -1,0 +1,51 @@
+# Build outputs
+build*/
+Builds/
+JuceLibraryCode/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+Testing/
+_deps/
+
+# JUCE / generated IDE projects
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.xcodeproj/
+*.xcworkspace/
+DerivedData/
+
+# Plugin and binary artefacts
+*.vst3/
+*.component/
+*.appex/
+*.app/
+*.dll
+*.dylib
+*.so
+*.lib
+*.a
+*.pdb
+*.ilk
+*.exp
+
+# IDE/editor state
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.opensdf
+*.sdf
+
+# OS/temp files
+.DS_Store
+Thumbs.db
+*.tmp
+*.log

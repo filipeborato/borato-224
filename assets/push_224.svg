@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360">
+  <defs>
+    <linearGradient id="panelGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5f0e4"/>
+      <stop offset="55%" stop-color="#d8d3c7"/>
+      <stop offset="100%" stop-color="#f8f4ea"/>
+    </linearGradient>
+
+    <linearGradient id="buttonGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4f5053"/>
+      <stop offset="45%" stop-color="#232427"/>
+      <stop offset="100%" stop-color="#101113"/>
+    </linearGradient>
+
+    <linearGradient id="buttonHighlight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <radialGradient id="redLed" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffb0a0"/>
+      <stop offset="35%" stop-color="#ff2d18"/>
+      <stop offset="100%" stop-color="#5a0600"/>
+    </radialGradient>
+
+    <filter id="softShadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+
+    <filter id="ledGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="360" rx="18" fill="url(#panelGrad)"/>
+
+  <g id="push-button-section" font-family="Arial, Helvetica, sans-serif">
+    <rect x="60" y="42" width="1080" height="260" rx="12" fill="#ece7d8" stroke="#9c978b" stroke-width="2"/>
+
+    <text x="600" y="82" text-anchor="middle" font-size="18" fill="#5b554a" letter-spacing="5">
+      PROGRAM / SYSTEM CONTROL
+    </text>
+
+    <g id="program-buttons">
+      <text x="92" y="130" font-size="14" fill="#6c665b" letter-spacing="3">PG</text>
+
+      <g id="program-01">
+        <rect x="145" y="105" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="152" y="110" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="223" cy="146" r="6" fill="url(#redLed)" filter="url(#ledGlow)"/>
+        <text x="192" y="140" text-anchor="middle" font-size="16" fill="#d8d5cc">HALL</text>
+      </g>
+
+      <g id="program-02">
+        <rect x="265" y="105" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="272" y="110" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="343" cy="146" r="6" fill="#2a0603"/>
+        <text x="312" y="140" text-anchor="middle" font-size="16" fill="#d8d5cc">ROOM</text>
+      </g>
+
+      <g id="program-03">
+        <rect x="385" y="105" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="392" y="110" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="463" cy="146" r="6" fill="url(#redLed)" filter="url(#ledGlow)"/>
+        <text x="432" y="140" text-anchor="middle" font-size="16" fill="#d8d5cc">PLATE</text>
+      </g>
+
+      <g id="program-04">
+        <rect x="505" y="105" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="512" y="110" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="583" cy="146" r="6" fill="#2a0603"/>
+        <text x="552" y="140" text-anchor="middle" font-size="16" fill="#d8d5cc">CHAM</text>
+      </g>
+
+      <g id="program-05">
+        <rect x="625" y="105" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="632" y="110" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="703" cy="146" r="6" fill="#2a0603"/>
+        <text x="672" y="140" text-anchor="middle" font-size="16" fill="#d8d5cc">GATE</text>
+      </g>
+
+      <g id="program-06">
+        <rect x="745" y="105" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="752" y="110" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="823" cy="146" r="6" fill="url(#redLed)" filter="url(#ledGlow)"/>
+        <text x="792" y="140" text-anchor="middle" font-size="16" fill="#d8d5cc">AMBI</text>
+      </g>
+
+      <g id="program-07">
+        <rect x="865" y="105" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="872" y="110" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="943" cy="146" r="6" fill="#2a0603"/>
+        <text x="912" y="140" text-anchor="middle" font-size="16" fill="#d8d5cc">SPACE</text>
+      </g>
+
+      <g id="program-08">
+        <rect x="985" y="105" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="992" y="110" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="1063" cy="146" r="6" fill="#2a0603"/>
+        <text x="1032" y="140" text-anchor="middle" font-size="16" fill="#d8d5cc">REV 8</text>
+      </g>
+    </g>
+
+    <g id="system-buttons">
+      <text x="92" y="225" font-size="14" fill="#6c665b" letter-spacing="3">SYS</text>
+
+      <g id="system-01">
+        <rect x="145" y="200" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="152" y="205" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="223" cy="241" r="6" fill="#2a0603"/>
+        <text x="192" y="235" text-anchor="middle" font-size="15" fill="#d8d5cc">STORE</text>
+      </g>
+
+      <g id="system-02">
+        <rect x="265" y="200" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="272" y="205" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="343" cy="241" r="6" fill="#2a0603"/>
+        <text x="312" y="235" text-anchor="middle" font-size="15" fill="#d8d5cc">RECALL</text>
+      </g>
+
+      <g id="system-03">
+        <rect x="385" y="200" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="392" y="205" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="463" cy="241" r="6" fill="url(#redLed)" filter="url(#ledGlow)"/>
+        <text x="432" y="235" text-anchor="middle" font-size="15" fill="#d8d5cc">BYPASS</text>
+      </g>
+
+      <g id="system-04">
+        <rect x="505" y="200" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="512" y="205" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="583" cy="241" r="6" fill="#2a0603"/>
+        <text x="552" y="235" text-anchor="middle" font-size="15" fill="#d8d5cc">MUTE</text>
+      </g>
+
+      <g id="system-05">
+        <rect x="625" y="200" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="632" y="205" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="703" cy="241" r="6" fill="#2a0603"/>
+        <text x="672" y="235" text-anchor="middle" font-size="15" fill="#d8d5cc">EDIT</text>
+      </g>
+
+      <g id="system-06">
+        <rect x="745" y="200" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="752" y="205" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="823" cy="241" r="6" fill="#2a0603"/>
+        <text x="792" y="235" text-anchor="middle" font-size="15" fill="#d8d5cc">VALUE</text>
+      </g>
+
+      <g id="system-07">
+        <rect x="865" y="200" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="872" y="205" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="943" cy="241" r="6" fill="#2a0603"/>
+        <text x="912" y="235" text-anchor="middle" font-size="15" fill="#d8d5cc">UP</text>
+      </g>
+
+      <g id="system-08">
+        <rect x="985" y="200" width="95" height="58" rx="8" fill="url(#buttonGrad)" filter="url(#softShadow)"/>
+        <rect x="992" y="205" width="81" height="18" rx="5" fill="url(#buttonHighlight)"/>
+        <circle cx="1063" cy="241" r="6" fill="#2a0603"/>
+        <text x="1032" y="235" text-anchor="middle" font-size="15" fill="#d8d5cc">DOWN</text>
+      </g>
+    </g>
+  </g>
+</svg>

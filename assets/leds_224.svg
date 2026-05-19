@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320">
+  <defs>
+    <linearGradient id="panelGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f7f2e6"/>
+      <stop offset="55%" stop-color="#ddd6c8"/>
+      <stop offset="100%" stop-color="#f4efe4"/>
+    </linearGradient>
+
+    <linearGradient id="glassGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#160000"/>
+      <stop offset="50%" stop-color="#360000"/>
+      <stop offset="100%" stop-color="#090000"/>
+    </linearGradient>
+
+    <radialGradient id="redLed" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd1c8"/>
+      <stop offset="35%" stop-color="#ff2b18"/>
+      <stop offset="100%" stop-color="#5a0400"/>
+    </radialGradient>
+
+    <filter id="redGlow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="320" rx="14" fill="url(#panelGrad)"/>
+
+  <g id="top-branding" font-family="Arial, Helvetica, sans-serif">
+    <text x="80" y="55" font-size="34" fill="#8a6a32" letter-spacing="1">Model 224</text>
+    <text x="82" y="82" font-size="16" fill="#252525" letter-spacing="2">DIGITAL REVERB SYSTEM</text>
+
+    <text x="920" y="62" font-size="42" font-weight="bold" font-style="italic" fill="#8a6a32" letter-spacing="2">Borato</text>
+    <text x="898" y="87" font-size="16" fill="#252525" letter-spacing="2">STUDIO REVERBERATOR</text>
+
+    <circle cx="38" cy="45" r="13" fill="#1a1a1a" stroke="#777" stroke-width="2"/>
+    <line x1="31" y1="45" x2="45" y2="45" stroke="#777" stroke-width="3"/>
+    <line x1="38" y1="38" x2="38" y2="52" stroke="#777" stroke-width="3"/>
+
+    <circle cx="1162" cy="45" r="13" fill="#1a1a1a" stroke="#777" stroke-width="2"/>
+    <line x1="1155" y1="45" x2="1169" y2="45" stroke="#777" stroke-width="3"/>
+    <line x1="1162" y1="38" x2="1162" y2="52" stroke="#777" stroke-width="3"/>
+  </g>
+
+  <g id="led-display-section" font-family="Arial, Helvetica, sans-serif">
+    <rect x="75" y="105" width="1050" height="135" rx="10" fill="#25211f" filter="url(#shadow)"/>
+    <rect x="83" y="112" width="1034" height="121" rx="6" fill="url(#glassGrad)" stroke="#080000" stroke-width="3"/>
+
+    <g id="left-status-leds">
+      <circle cx="125" cy="132" r="7" fill="url(#redLed)" filter="url(#redGlow)"/>
+      <text x="148" y="137" font-size="15" fill="#f0dbc3">sec</text>
+
+      <circle cx="125" cy="158" r="6" fill="#3b0503" stroke="#9c3b31" stroke-width="2"/>
+      <text x="148" y="163" font-size="15" fill="#f0dbc3">ms</text>
+
+      <circle cx="125" cy="184" r="6" fill="#3b0503" stroke="#9c3b31" stroke-width="2"/>
+      <text x="148" y="189" font-size="15" fill="#f0dbc3">Hz</text>
+
+      <circle cx="125" cy="210" r="6" fill="#3b0503" stroke="#9c3b31" stroke-width="2"/>
+      <text x="148" y="215" font-size="15" fill="#f0dbc3">kHz</text>
+    </g>
+
+    <g id="led-digits" font-family="Courier New, monospace" font-weight="bold" filter="url(#redGlow)">
+      <text x="280" y="185" font-size="72" fill="#ff321f">2.24</text>
+      <text x="520" y="185" font-size="72" fill="#ff321f">1.35</text>
+      <text x="780" y="185" font-size="72" fill="#ff321f">3.20</text>
+    </g>
+
+    <g id="ghost-digits" font-family="Courier New, monospace" font-weight="bold" opacity="0.16">
+      <text x="220" y="185" font-size="72" fill="#ff321f">8</text>
+      <text x="500" y="185" font-size="72" fill="#ff321f">8</text>
+      <text x="740" y="185" font-size="72" fill="#ff321f">8</text>
+    </g>
+
+    <g id="right-status-leds">
+      <circle cx="1024" cy="140" r="7" fill="url(#redLed)" filter="url(#redGlow)"/>
+      <text x="1045" y="145" font-size="15" fill="#f0dbc3">Program</text>
+
+      <circle cx="1024" cy="174" r="6" fill="#3b0503" stroke="#9c3b31" stroke-width="2"/>
+      <text x="1045" y="179" font-size="15" fill="#f0dbc3">Edit</text>
+
+      <circle cx="1024" cy="208" r="6" fill="#3b0503" stroke="#9c3b31" stroke-width="2"/>
+      <text x="1045" y="213" font-size="15" fill="#f0dbc3">Store</text>
+    </g>
+  </g>
+
+  <g id="program-divider" font-family="Arial, Helvetica, sans-serif">
+    <line x1="120" y1="275" x2="525" y2="275" stroke="#8a6a32" stroke-width="2"/>
+    <text x="600" y="282" text-anchor="middle" font-size="19" fill="#8a6a32" letter-spacing="2">PROGRAM</text>
+    <line x1="675" y1="275" x2="1080" y2="275" stroke="#8a6a32" stroke-width="2"/>
+  </g>
+</svg>

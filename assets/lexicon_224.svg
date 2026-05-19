@@ -1,0 +1,556 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200">
+  <defs>
+    <linearGradient id="panelGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f7f2e6"/>
+      <stop offset="50%" stop-color="#e2dbcc"/>
+      <stop offset="100%" stop-color="#d3cab8"/>
+    </linearGradient>
+
+    <linearGradient id="sideGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#d8d0c0"/>
+      <stop offset="50%" stop-color="#eee8dc"/>
+      <stop offset="100%" stop-color="#c8bfad"/>
+    </linearGradient>
+
+    <linearGradient id="pcbGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2f6042"/>
+      <stop offset="100%" stop-color="#183a27"/>
+    </linearGradient>
+
+    <linearGradient id="glassGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#190000"/>
+      <stop offset="55%" stop-color="#3a0000"/>
+      <stop offset="100%" stop-color="#080000"/>
+    </linearGradient>
+
+    <linearGradient id="buttonGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#55575c"/>
+      <stop offset="50%" stop-color="#24262a"/>
+      <stop offset="100%" stop-color="#101113"/>
+    </linearGradient>
+
+    <linearGradient id="faderGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#666a70"/>
+      <stop offset="45%" stop-color="#2b2e34"/>
+      <stop offset="100%" stop-color="#111214"/>
+    </linearGradient>
+
+    <radialGradient id="redLed" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd5cc"/>
+      <stop offset="35%" stop-color="#ff321f"/>
+      <stop offset="100%" stop-color="#580500"/>
+    </radialGradient>
+
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+
+    <filter id="smallShadow">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+
+    <filter id="redGlow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="surfaceNoise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.035"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+
+  <!-- rack body -->
+  <rect x="90" y="110" width="1420" height="1075" rx="14" fill="url(#panelGrad)" filter="url(#shadow)"/>
+  <rect x="90" y="110" width="1420" height="1075" rx="14" filter="url(#surfaceNoise)" opacity="0.65"/>
+
+  <!-- side ears -->
+  <rect x="25" y="110" width="72" height="1075" rx="8" fill="url(#sideGrad)" stroke="#b8af9e"/>
+  <rect x="1503" y="110" width="72" height="1075" rx="8" fill="url(#sideGrad)" stroke="#b8af9e"/>
+<!-- exposed pcb / printed circuit board improved -->
+<g id="exposed-pcb">
+  <!-- board base -->
+  <rect x="185" y="35" width="1230" height="80" rx="8" fill="#244d35" stroke="#102b1c" stroke-width="3"/>
+
+  <!-- fiberglass weave -->
+  <g opacity="0.12" stroke="#b8d2b5" stroke-width="1">
+    <line x1="205" y1="45" x2="1395" y2="45"/>
+    <line x1="205" y1="55" x2="1395" y2="55"/>
+    <line x1="205" y1="65" x2="1395" y2="65"/>
+    <line x1="205" y1="75" x2="1395" y2="75"/>
+    <line x1="205" y1="85" x2="1395" y2="85"/>
+    <line x1="205" y1="95" x2="1395" y2="95"/>
+
+    <line x1="230" y1="39" x2="230" y2="110"/>
+    <line x1="300" y1="39" x2="300" y2="110"/>
+    <line x1="370" y1="39" x2="370" y2="110"/>
+    <line x1="440" y1="39" x2="440" y2="110"/>
+    <line x1="510" y1="39" x2="510" y2="110"/>
+    <line x1="580" y1="39" x2="580" y2="110"/>
+    <line x1="650" y1="39" x2="650" y2="110"/>
+    <line x1="720" y1="39" x2="720" y2="110"/>
+    <line x1="790" y1="39" x2="790" y2="110"/>
+    <line x1="860" y1="39" x2="860" y2="110"/>
+    <line x1="930" y1="39" x2="930" y2="110"/>
+    <line x1="1000" y1="39" x2="1000" y2="110"/>
+    <line x1="1070" y1="39" x2="1070" y2="110"/>
+    <line x1="1140" y1="39" x2="1140" y2="110"/>
+    <line x1="1210" y1="39" x2="1210" y2="110"/>
+    <line x1="1280" y1="39" x2="1280" y2="110"/>
+    <line x1="1350" y1="39" x2="1350" y2="110"/>
+  </g>
+
+  <!-- copper traces -->
+  <g fill="none" stroke="#c89a46" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95">
+    <path d="M235 58 H310 V82 H435"/>
+    <path d="M250 92 H390 V68 H520"/>
+    <path d="M575 55 H680 V82 H770"/>
+    <path d="M820 88 H925 V58 H1045"/>
+    <path d="M1085 55 H1195 V86 H1340"/>
+    <path d="M965 42 H1110"/>
+  </g>
+
+  <!-- solder pads -->
+  <g fill="#d9b45f" stroke="#72501e" stroke-width="1.4">
+    <circle cx="235" cy="58" r="6"/>
+    <circle cx="310" cy="58" r="5"/>
+    <circle cx="435" cy="82" r="6"/>
+    <circle cx="250" cy="92" r="6"/>
+    <circle cx="390" cy="92" r="5"/>
+    <circle cx="520" cy="68" r="6"/>
+    <circle cx="575" cy="55" r="6"/>
+    <circle cx="680" cy="55" r="5"/>
+    <circle cx="770" cy="82" r="6"/>
+    <circle cx="820" cy="88" r="6"/>
+    <circle cx="925" cy="88" r="5"/>
+    <circle cx="1045" cy="58" r="6"/>
+    <circle cx="1085" cy="55" r="6"/>
+    <circle cx="1195" cy="55" r="5"/>
+    <circle cx="1340" cy="86" r="6"/>
+  </g>
+
+  <!-- white ceramic power resistor -->
+  <g id="white-ceramic-resistor">
+    <rect x="455" y="45" width="92" height="26" rx="4" fill="#e8e3d5" stroke="#9a9183" stroke-width="2"/>
+    <rect x="462" y="51" width="78" height="14" rx="2" fill="#f7f3e8" opacity="0.65"/>
+    <line x1="432" y1="58" x2="455" y2="58" stroke="#b8a26d" stroke-width="4" stroke-linecap="round"/>
+    <line x1="547" y1="58" x2="570" y2="58" stroke="#b8a26d" stroke-width="4" stroke-linecap="round"/>
+    <text x="501" y="63" text-anchor="middle" font-family="Arial" font-size="10" fill="#6b6258">5W 220Ω</text>
+  </g>
+
+  <!-- vintage toggle switches -->
+  <g id="toggle-switches">
+    <g transform="translate(640 45)">
+      <rect x="0" y="0" width="58" height="42" rx="5" fill="#191919" stroke="#777" stroke-width="2"/>
+      <rect x="6" y="6" width="46" height="30" rx="3" fill="#2b2b2b"/>
+      <circle cx="29" cy="21" r="10" fill="#0e0e0e" stroke="#999" stroke-width="2"/>
+      <line x1="29" y1="21" x2="44" y2="7" stroke="#d7d1c6" stroke-width="5" stroke-linecap="round"/>
+      <text x="29" y="-6" text-anchor="middle" font-family="Arial" font-size="10" fill="#d8c28a">ON</text>
+      <text x="29" y="55" text-anchor="middle" font-family="Arial" font-size="10" fill="#d8c28a">OFF</text>
+    </g>
+
+    <g transform="translate(725 45)">
+      <rect x="0" y="0" width="58" height="42" rx="5" fill="#191919" stroke="#777" stroke-width="2"/>
+      <rect x="6" y="6" width="46" height="30" rx="3" fill="#2b2b2b"/>
+      <circle cx="29" cy="21" r="10" fill="#0e0e0e" stroke="#999" stroke-width="2"/>
+      <line x1="29" y1="21" x2="14" y2="7" stroke="#d7d1c6" stroke-width="5" stroke-linecap="round"/>
+      <text x="29" y="-6" text-anchor="middle" font-family="Arial" font-size="10" fill="#d8c28a">ON</text>
+      <text x="29" y="55" text-anchor="middle" font-family="Arial" font-size="10" fill="#d8c28a">OFF</text>
+    </g>
+
+    <g transform="translate(810 45)">
+      <rect x="0" y="0" width="58" height="42" rx="5" fill="#191919" stroke="#777" stroke-width="2"/>
+      <rect x="6" y="6" width="46" height="30" rx="3" fill="#2b2b2b"/>
+      <circle cx="29" cy="21" r="10" fill="#0e0e0e" stroke="#999" stroke-width="2"/>
+      <line x1="29" y1="21" x2="44" y2="35" stroke="#d7d1c6" stroke-width="5" stroke-linecap="round"/>
+      <text x="29" y="-6" text-anchor="middle" font-family="Arial" font-size="10" fill="#d8c28a">ON</text>
+      <text x="29" y="55" text-anchor="middle" font-family="Arial" font-size="10" fill="#d8c28a">OFF</text>
+    </g>
+  </g>
+
+  <!-- resistors -->
+  <g id="small-resistors">
+    <g transform="translate(285 51)">
+      <line x1="-20" y1="8" x2="0" y2="8" stroke="#b8a26d" stroke-width="3"/>
+      <rect x="0" y="0" width="48" height="16" rx="8" fill="#c9aa72" stroke="#533a20" stroke-width="1.5"/>
+      <line x1="48" y1="8" x2="68" y2="8" stroke="#b8a26d" stroke-width="3"/>
+      <line x1="13" y1="1" x2="13" y2="15" stroke="#812c25" stroke-width="3"/>
+      <line x1="25" y1="1" x2="25" y2="15" stroke="#222" stroke-width="3"/>
+      <line x1="37" y1="1" x2="37" y2="15" stroke="#c49a35" stroke-width="3"/>
+    </g>
+
+    <g transform="translate(930 71)">
+      <line x1="-20" y1="8" x2="0" y2="8" stroke="#b8a26d" stroke-width="3"/>
+      <rect x="0" y="0" width="48" height="16" rx="8" fill="#c9aa72" stroke="#533a20" stroke-width="1.5"/>
+      <line x1="48" y1="8" x2="68" y2="8" stroke="#b8a26d" stroke-width="3"/>
+      <line x1="13" y1="1" x2="13" y2="15" stroke="#812c25" stroke-width="3"/>
+      <line x1="25" y1="1" x2="25" y2="15" stroke="#222" stroke-width="3"/>
+      <line x1="37" y1="1" x2="37" y2="15" stroke="#c49a35" stroke-width="3"/>
+    </g>
+  </g>
+
+  <!-- capacitors -->
+  <g id="capacitors">
+    <g transform="translate(1135 65)">
+      <rect x="0" y="-18" width="22" height="36" rx="5" fill="#263c88" stroke="#101b44" stroke-width="2"/>
+      <line x1="7" y1="-23" x2="7" y2="-18" stroke="#b8a26d" stroke-width="2"/>
+      <line x1="15" y1="18" x2="15" y2="24" stroke="#b8a26d" stroke-width="2"/>
+    </g>
+
+    <g transform="translate(1235 78)">
+      <rect x="0" y="-15" width="18" height="30" rx="4" fill="#1f6f8f" stroke="#0e3545" stroke-width="2"/>
+      <line x1="6" y1="-20" x2="6" y2="-15" stroke="#b8a26d" stroke-width="2"/>
+      <line x1="13" y1="15" x2="13" y2="21" stroke="#b8a26d" stroke-width="2"/>
+    </g>
+  </g>
+
+  <!-- small IC chip -->
+  <g id="ic-chip">
+    <rect x="1030" y="72" width="68" height="28" rx="3" fill="#151515" stroke="#555" stroke-width="1.5"/>
+    <text x="1064" y="90" text-anchor="middle" font-family="Arial" font-size="9" fill="#aaa">BRT-224</text>
+
+    <g stroke="#c9b47c" stroke-width="2">
+      <line x1="1035" y1="70" x2="1035" y2="62"/>
+      <line x1="1047" y1="70" x2="1047" y2="62"/>
+      <line x1="1059" y1="70" x2="1059" y2="62"/>
+      <line x1="1071" y1="70" x2="1071" y2="62"/>
+      <line x1="1083" y1="70" x2="1083" y2="62"/>
+
+      <line x1="1035" y1="100" x2="1035" y2="108"/>
+      <line x1="1047" y1="100" x2="1047" y2="108"/>
+      <line x1="1059" y1="100" x2="1059" y2="108"/>
+      <line x1="1071" y1="100" x2="1071" y2="108"/>
+      <line x1="1083" y1="100" x2="1083" y2="108"/>
+    </g>
+  </g>
+
+  <!-- mounting holes -->
+  <g fill="#0d0d0d" stroke="#6f8f72" stroke-width="2">
+    <circle cx="210" cy="56" r="8"/>
+    <circle cx="1390" cy="56" r="8"/>
+    <circle cx="210" cy="94" r="8"/>
+    <circle cx="1390" cy="94" r="8"/>
+  </g>
+</g>
+ <!-- screws -->
+  <g fill="#171717" stroke="#686868" stroke-width="3">
+    <circle cx="125" cy="145" r="15"/>
+    <circle cx="1475" cy="145" r="15"/>
+    <circle cx="125" cy="1150" r="15"/>
+    <circle cx="1475" cy="1150" r="15"/>
+  </g>
+
+  <!-- titles -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="170" y="165" font-size="46" fill="#8a6932">Model 224</text>
+    <text x="172" y="202" font-size="23" fill="#292929" letter-spacing="2">DIGITAL REVERB SYSTEM</text>
+
+    <text x="1140" y="168" font-size="58" font-style="italic" font-weight="bold" fill="#8a6932">Borato</text>
+    <text x="1125" y="204" font-size="22" fill="#292929" letter-spacing="2">STUDIO REVERBERATOR</text>
+  </g>
+
+  <!-- led display -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="170" y="245" width="1260" height="145" rx="13" fill="#23201d" filter="url(#smallShadow)"/>
+    <rect x="182" y="256" width="1236" height="123" rx="7" fill="url(#glassGrad)" stroke="#070000" stroke-width="4"/>
+
+    <circle cx="230" cy="286" r="9" fill="url(#redLed)" filter="url(#redGlow)"/>
+    <text x="260" y="294" font-size="22" fill="#f0dbc3">sec</text>
+
+    <circle cx="230" cy="322" r="7" fill="#350503" stroke="#a23b30" stroke-width="2"/>
+    <text x="260" y="330" font-size="22" fill="#f0dbc3">ms</text>
+
+    <circle cx="230" cy="358" r="7" fill="#350503" stroke="#a23b30" stroke-width="2"/>
+    <text x="260" y="366" font-size="22" fill="#f0dbc3">Hz</text>
+
+    <g fill="#f0dbc3">
+      <text x="405" y="300" font-size="19" letter-spacing="3">PARAMETER</text>
+      <text x="405" y="336" font-size="38" letter-spacing="5">DECAY</text>
+    </g>
+
+    <g id="seven-seg-display" transform="translate(585 260) scale(0.86)">
+      <g fill="#42100b" opacity="0.5">
+        <g id="digit-2-ghost">
+          <path d="M14 0 H56 L68 10 L56 20 H14 L2 10 Z"/>
+          <path d="M60 14 L70 24 V54 L60 64 L50 54 V24 Z"/>
+          <path d="M60 68 L70 78 V108 L60 118 L50 108 V78 Z"/>
+          <path d="M14 112 H56 L68 122 L56 132 H14 L2 122 Z"/>
+          <path d="M10 68 L20 78 V108 L10 118 L0 108 V78 Z"/>
+          <path d="M10 14 L20 24 V54 L10 64 L0 54 V24 Z"/>
+          <path d="M14 56 H56 L66 66 L56 76 H14 L4 66 Z"/>
+        </g>
+        <use href="#digit-2-ghost" x="100"/>
+        <use href="#digit-2-ghost" x="192"/>
+      </g>
+
+      <g fill="#ff3822" filter="url(#redGlow)">
+        <g>
+          <path d="M14 0 H56 L68 10 L56 20 H14 L2 10 Z"/>
+          <path d="M60 14 L70 24 V54 L60 64 L50 54 V24 Z"/>
+          <path d="M14 112 H56 L68 122 L56 132 H14 L2 122 Z"/>
+          <path d="M10 68 L20 78 V108 L10 118 L0 108 V78 Z"/>
+          <path d="M14 56 H56 L66 66 L56 76 H14 L4 66 Z"/>
+        </g>
+        <circle cx="86" cy="122" r="7"/>
+        <g transform="translate(100 0)">
+          <path d="M14 0 H56 L68 10 L56 20 H14 L2 10 Z"/>
+          <path d="M60 14 L70 24 V54 L60 64 L50 54 V24 Z"/>
+          <path d="M14 112 H56 L68 122 L56 132 H14 L2 122 Z"/>
+          <path d="M10 68 L20 78 V108 L10 118 L0 108 V78 Z"/>
+          <path d="M14 56 H56 L66 66 L56 76 H14 L4 66 Z"/>
+        </g>
+        <g transform="translate(192 0)">
+          <path d="M10 14 L20 24 V54 L10 64 L0 54 V24 Z"/>
+          <path d="M60 14 L70 24 V54 L60 64 L50 54 V24 Z"/>
+          <path d="M60 68 L70 78 V108 L60 118 L50 108 V78 Z"/>
+          <path d="M14 56 H56 L66 66 L56 76 H14 L4 66 Z"/>
+        </g>
+      </g>
+    </g>
+
+    <circle cx="1280" cy="292" r="7" fill="#350503" stroke="#a23b30" stroke-width="2"/>
+    <text x="1310" y="300" font-size="22" fill="#f0dbc3">Program</text>
+
+    <circle cx="1280" cy="335" r="9" fill="url(#redLed)" filter="url(#redGlow)"/>
+    <text x="1310" y="343" font-size="22" fill="#f0dbc3">Edit</text>
+  </g>
+
+  <!-- program buttons -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <line x1="245" y1="445" x2="715" y2="445" stroke="#8a6932" stroke-width="2"/>
+    <text x="800" y="454" text-anchor="middle" font-size="28" fill="#8a6932">PROGRAM</text>
+    <line x1="885" y1="445" x2="1355" y2="445" stroke="#8a6932" stroke-width="2"/>
+
+    <g fill="url(#buttonGrad)" filter="url(#smallShadow)">
+      <rect x="245" y="500" width="105" height="60" rx="7"/>
+      <rect x="395" y="500" width="105" height="60" rx="7"/>
+      <rect x="545" y="500" width="105" height="60" rx="7"/>
+      <rect x="695" y="500" width="105" height="60" rx="7"/>
+      <rect x="845" y="500" width="105" height="60" rx="7"/>
+      <rect x="995" y="500" width="105" height="60" rx="7"/>
+      <rect x="1145" y="500" width="105" height="60" rx="7"/>
+      <rect x="1295" y="500" width="105" height="60" rx="7"/>
+    </g>
+
+    <g fill="#dcc487" font-size="18" text-anchor="middle">
+      <text x="297" y="538">HALL</text>
+      <text x="447" y="538">ROOM</text>
+      <text x="597" y="538">PLATE</text>
+      <text x="747" y="538">CHMBR</text>
+      <text x="897" y="538">AMBI</text>
+      <text x="1047" y="538">SPACE</text>
+      <text x="1197" y="538">RANDOM</text>
+      <text x="1347" y="538">USER</text>
+    </g>
+
+    <g>
+      <circle cx="297" cy="475" r="8" fill="url(#redLed)" filter="url(#redGlow)"/>
+      <circle cx="447" cy="475" r="8" fill="#380400"/>
+      <circle cx="597" cy="475" r="8" fill="url(#redLed)" filter="url(#redGlow)"/>
+      <circle cx="747" cy="475" r="8" fill="#380400"/>
+      <circle cx="897" cy="475" r="8" fill="#380400"/>
+      <circle cx="1047" cy="475" r="8" fill="#380400"/>
+      <circle cx="1197" cy="475" r="8" fill="#380400"/>
+      <circle cx="1347" cy="475" r="8" fill="url(#redLed)" filter="url(#redGlow)"/>
+    </g>
+  </g>
+
+  <!-- system buttons -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <line x1="245" y1="615" x2="715" y2="615" stroke="#8a6932" stroke-width="2"/>
+    <text x="800" y="624" text-anchor="middle" font-size="28" fill="#8a6932">SYSTEM</text>
+    <line x1="885" y1="615" x2="1355" y2="615" stroke="#8a6932" stroke-width="2"/>
+
+    <g fill="url(#buttonGrad)" filter="url(#smallShadow)">
+      <rect x="245" y="650" width="120" height="62" rx="7"/>
+      <rect x="395" y="650" width="120" height="62" rx="7"/>
+      <rect x="545" y="650" width="120" height="62" rx="7"/>
+      <rect x="695" y="650" width="120" height="62" rx="7"/>
+      <rect x="845" y="650" width="120" height="62" rx="7"/>
+      <rect x="995" y="650" width="120" height="62" rx="7"/>
+      <rect x="1145" y="650" width="120" height="62" rx="7"/>
+      <rect x="1295" y="650" width="120" height="62" rx="7"/>
+    </g>
+
+    <g fill="#dcc487" font-size="20" text-anchor="middle">
+      <text x="305" y="690">STORE</text>
+      <text x="455" y="690">RECALL</text>
+      <text x="605" y="690">A/B</text>
+      <text x="755" y="690">COMPARE</text>
+      <text x="905" y="690">EDIT</text>
+      <text x="1055" y="690">BYPASS</text>
+      <text x="1205" y="690">VALUE -</text>
+      <text x="1355" y="690">VALUE +</text>
+    </g>
+  </g>
+
+  <!-- fader area -->
+  <rect x="180" y="755" width="1240" height="360" rx="8" fill="none" stroke="#8a6932" stroke-width="2"/>
+
+  <g font-family="Arial, Helvetica, sans-serif" fill="#262626">
+
+    <g transform="translate(290 805)">
+      <text x="0" y="0" text-anchor="middle" font-size="24" fill="#8a6932">BASS</text>
+      <text x="-52" y="58" text-anchor="end" font-size="18">+12</text>
+      <text x="-52" y="148" text-anchor="end" font-size="18">0</text>
+      <text x="-52" y="238" text-anchor="end" font-size="18">-12</text>
+      <rect x="-8" y="35" width="16" height="250" rx="8" fill="#050505"/>
+
+      <g stroke="#333" stroke-width="1.6">
+        <line x1="-38" y1="55" x2="-18" y2="55"/>
+        <line x1="-38" y1="100" x2="-18" y2="100"/>
+        <line x1="-38" y1="145" x2="-18" y2="145"/>
+        <line x1="-38" y1="190" x2="-18" y2="190"/>
+        <line x1="-38" y1="235" x2="-18" y2="235"/>
+        <line x1="18" y1="55" x2="38" y2="55"/>
+        <line x1="18" y1="100" x2="38" y2="100"/>
+        <line x1="18" y1="145" x2="38" y2="145"/>
+        <line x1="18" y1="190" x2="38" y2="190"/>
+        <line x1="18" y1="235" x2="38" y2="235"/>
+      </g>
+
+      <rect x="-48" y="145" width="96" height="52" rx="7" fill="url(#faderGrad)" filter="url(#smallShadow)"/>
+      <line x1="-40" y1="171" x2="40" y2="171" stroke="#d0d0d0" stroke-width="3"/>
+      <text x="0" y="325" text-anchor="middle" font-size="18">dB</text>
+    </g>
+
+    <g transform="translate(500 805)">
+      <text x="0" y="0" text-anchor="middle" font-size="24" fill="#8a6932">MID</text>
+      <text x="-52" y="58" text-anchor="end" font-size="18">+12</text>
+      <text x="-52" y="148" text-anchor="end" font-size="18">0</text>
+      <text x="-52" y="238" text-anchor="end" font-size="18">-12</text>
+      <rect x="-8" y="35" width="16" height="250" rx="8" fill="#050505"/>
+
+      <g stroke="#333" stroke-width="1.6">
+        <line x1="-38" y1="55" x2="-18" y2="55"/>
+        <line x1="-38" y1="100" x2="-18" y2="100"/>
+        <line x1="-38" y1="145" x2="-18" y2="145"/>
+        <line x1="-38" y1="190" x2="-18" y2="190"/>
+        <line x1="-38" y1="235" x2="-18" y2="235"/>
+        <line x1="18" y1="55" x2="38" y2="55"/>
+        <line x1="18" y1="100" x2="38" y2="100"/>
+        <line x1="18" y1="145" x2="38" y2="145"/>
+        <line x1="18" y1="190" x2="38" y2="190"/>
+        <line x1="18" y1="235" x2="38" y2="235"/>
+      </g>
+
+      <rect x="-48" y="125" width="96" height="52" rx="7" fill="url(#faderGrad)" filter="url(#smallShadow)"/>
+      <line x1="-40" y1="151" x2="40" y2="151" stroke="#d0d0d0" stroke-width="3"/>
+      <text x="0" y="325" text-anchor="middle" font-size="18">dB</text>
+    </g>
+
+    <g transform="translate(710 805)">
+      <text x="0" y="0" text-anchor="middle" font-size="24" fill="#8a6932">CROSSOVER</text>
+      <text x="-52" y="58" text-anchor="end" font-size="18">2k</text>
+      <text x="-52" y="148" text-anchor="end" font-size="18">500</text>
+      <text x="-52" y="238" text-anchor="end" font-size="18">125</text>
+      <rect x="-8" y="35" width="16" height="250" rx="8" fill="#050505"/>
+
+      <g stroke="#333" stroke-width="1.6">
+        <line x1="-38" y1="55" x2="-18" y2="55"/>
+        <line x1="-38" y1="100" x2="-18" y2="100"/>
+        <line x1="-38" y1="145" x2="-18" y2="145"/>
+        <line x1="-38" y1="190" x2="-18" y2="190"/>
+        <line x1="-38" y1="235" x2="-18" y2="235"/>
+        <line x1="18" y1="55" x2="38" y2="55"/>
+        <line x1="18" y1="100" x2="38" y2="100"/>
+        <line x1="18" y1="145" x2="38" y2="145"/>
+        <line x1="18" y1="190" x2="38" y2="190"/>
+        <line x1="18" y1="235" x2="38" y2="235"/>
+      </g>
+
+      <rect x="-48" y="145" width="96" height="52" rx="7" fill="url(#faderGrad)" filter="url(#smallShadow)"/>
+      <line x1="-40" y1="171" x2="40" y2="171" stroke="#d0d0d0" stroke-width="3"/>
+      <text x="0" y="325" text-anchor="middle" font-size="18">Hz</text>
+    </g>
+
+    <g transform="translate(920 805)">
+      <text x="0" y="-7" text-anchor="middle" font-size="20" fill="#8a6932">TREBLE</text>
+      <text x="0" y="17" text-anchor="middle" font-size="20" fill="#8a6932">DECAY</text>
+      <text x="-52" y="58" text-anchor="end" font-size="18">+12</text>
+      <text x="-52" y="148" text-anchor="end" font-size="18">0</text>
+      <text x="-52" y="238" text-anchor="end" font-size="18">-12</text>
+      <rect x="-8" y="35" width="16" height="250" rx="8" fill="#050505"/>
+
+      <g stroke="#333" stroke-width="1.6">
+        <line x1="-38" y1="55" x2="-18" y2="55"/>
+        <line x1="-38" y1="100" x2="-18" y2="100"/>
+        <line x1="-38" y1="145" x2="-18" y2="145"/>
+        <line x1="-38" y1="190" x2="-18" y2="190"/>
+        <line x1="-38" y1="235" x2="-18" y2="235"/>
+        <line x1="18" y1="55" x2="38" y2="55"/>
+        <line x1="18" y1="100" x2="38" y2="100"/>
+        <line x1="18" y1="145" x2="38" y2="145"/>
+        <line x1="18" y1="190" x2="38" y2="190"/>
+        <line x1="18" y1="235" x2="38" y2="235"/>
+      </g>
+
+      <rect x="-48" y="103" width="96" height="52" rx="7" fill="url(#faderGrad)" filter="url(#smallShadow)"/>
+      <line x1="-40" y1="129" x2="40" y2="129" stroke="#d0d0d0" stroke-width="3"/>
+      <text x="0" y="325" text-anchor="middle" font-size="18">dB</text>
+    </g>
+
+    <g transform="translate(1130 805)">
+      <text x="0" y="0" text-anchor="middle" font-size="24" fill="#8a6932">DEPTH</text>
+      <text x="-52" y="58" text-anchor="end" font-size="18">+12</text>
+      <text x="-52" y="148" text-anchor="end" font-size="18">0</text>
+      <text x="-52" y="238" text-anchor="end" font-size="18">-12</text>
+      <rect x="-8" y="35" width="16" height="250" rx="8" fill="#050505"/>
+
+      <g stroke="#333" stroke-width="1.6">
+        <line x1="-38" y1="55" x2="-18" y2="55"/>
+        <line x1="-38" y1="100" x2="-18" y2="100"/>
+        <line x1="-38" y1="145" x2="-18" y2="145"/>
+        <line x1="-38" y1="190" x2="-18" y2="190"/>
+        <line x1="-38" y1="235" x2="-18" y2="235"/>
+        <line x1="18" y1="55" x2="38" y2="55"/>
+        <line x1="18" y1="100" x2="38" y2="100"/>
+        <line x1="18" y1="145" x2="38" y2="145"/>
+        <line x1="18" y1="190" x2="38" y2="190"/>
+        <line x1="18" y1="235" x2="38" y2="235"/>
+      </g>
+
+      <rect x="-48" y="175" width="96" height="52" rx="7" fill="url(#faderGrad)" filter="url(#smallShadow)"/>
+      <line x1="-40" y1="201" x2="40" y2="201" stroke="#d0d0d0" stroke-width="3"/>
+      <text x="0" y="325" text-anchor="middle" font-size="18">dB</text>
+    </g>
+
+    <g transform="translate(1340 805)">
+      <text x="0" y="0" text-anchor="middle" font-size="24" fill="#8a6932">PRE-DELAY</text>
+      <text x="-52" y="58" text-anchor="end" font-size="18">200</text>
+      <text x="-52" y="148" text-anchor="end" font-size="18">50</text>
+      <text x="-52" y="238" text-anchor="end" font-size="18">0</text>
+      <rect x="-8" y="35" width="16" height="250" rx="8" fill="#050505"/>
+
+      <g stroke="#333" stroke-width="1.6">
+        <line x1="-38" y1="55" x2="-18" y2="55"/>
+        <line x1="-38" y1="100" x2="-18" y2="100"/>
+        <line x1="-38" y1="145" x2="-18" y2="145"/>
+        <line x1="-38" y1="190" x2="-18" y2="190"/>
+        <line x1="-38" y1="235" x2="-18" y2="235"/>
+        <line x1="18" y1="55" x2="38" y2="55"/>
+        <line x1="18" y1="100" x2="38" y2="100"/>
+        <line x1="18" y1="145" x2="38" y2="145"/>
+        <line x1="18" y1="190" x2="38" y2="190"/>
+        <line x1="18" y1="235" x2="38" y2="235"/>
+      </g>
+
+      <rect x="-48" y="135" width="96" height="52" rx="7" fill="url(#faderGrad)" filter="url(#smallShadow)"/>
+      <line x1="-40" y1="161" x2="40" y2="161" stroke="#d0d0d0" stroke-width="3"/>
+      <text x="0" y="325" text-anchor="middle" font-size="18">ms</text>
+    </g>
+  </g>
+
+  <!-- footer -->
+  <g font-family="Arial, Helvetica, sans-serif" fill="#8a6932" font-size="18">
+    <text x="170" y="1160">BORATO AUDIO INC.</text>
+    <text x="1160" y="1160">MADE IN BRAZIL</text>
+    <text x="1375" y="1160">1978</text>
+  </g>
+</svg>
