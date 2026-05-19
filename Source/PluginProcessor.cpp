@@ -76,6 +76,9 @@ void Borato224AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juc
     for (int i = 0; i < numSamples; ++i)
     {
         const float mix = mixSmooth.getNextValue();
+        const float mixAngle = juce::jlimit(0.0f, 1.0f, mix) * juce::MathConstants<float>::halfPi;
+        const float dryMixGain = std::cos(mixAngle);
+        const float wetMixGain = std::sin(mixAngle);
         const float bypass = bypassSmooth.getNextValue();
         const float outGain = outputSmooth.getNextValue();
 
@@ -83,7 +86,7 @@ void Borato224AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juc
         {
             auto* dry = buffer.getWritePointer(ch);
             auto* wet = wetBuffer.getReadPointer(ch);
-            const float effected = dry[i] * (1.0f - mix) + wet[i] * mix;
+            const float effected = dry[i] * dryMixGain + wet[i] * wetMixGain;
             dry[i] = (effected * (1.0f - bypass) + dry[i] * bypass) * outGain;
         }
     }
