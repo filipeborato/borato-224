@@ -116,14 +116,19 @@ const juce::String Borato224AudioProcessor::getProgramName(int index)
 
 void Borato224AudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
-    if (auto xml = apvts.copyState().createXml())
+    if (auto xml = createPersistedStateXml(apvts, storedSnapshot, compareSnapshot, abA, abB, abSlotB, comparing))
         copyXmlToBinary(*xml, destData);
 }
 
 void Borato224AudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     if (auto xml = getXmlFromBinary(data, sizeInBytes))
-        apvts.replaceState(juce::ValueTree::fromXml(*xml));
+    {
+        if (xml->hasTagName("BORATO224_STATE"))
+            restorePersistedState(*xml);
+        else
+            apvts.replaceState(juce::ValueTree::fromXml(*xml));
+    }
 }
 
 bool Borato224AudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
@@ -204,6 +209,96 @@ void Borato224AudioProcessor::endCompare()
         return;
     applyParameterMap(apvts, compareSnapshot);
     comparing = false;
+}
+
+juce::XmlElement Borato224AudioProcessor::createParameterMapXml(const juce::String& tagName, const ParameterMap& map)
+{
+    juce::XmlElement element(tagName);
+    for (const auto& [id, value] : map)
+    {
+        auto* param = element.createNewChildElement("PARAM");
+        param->setAttribute("id", id);
+        param->setAttribute("value", value);
+    }
+    return element;
+}
+
+Borato224AudioProcessor::ParameterMap Borato224AudioProcessor::parseParameterMapXml(const juce::XmlElement& element)
+{
+    ParameterMap map;
+    for (auto* child = element.getFirstChildElement(); child != nullptr; child = child->getNextElement())
+    {
+        if (child->hasTagName("PARAM"))
+        {
+            const auto id = child->getStringAttribute("id");
+            if (id.isNotEmpty())
+                map[id] = child->getDoubleAttribute("value", 0.0);
+        }
+    }
+    return map;
+}
+
+std::unique_ptr<juce::XmlElement> Borato224AudioProcessor::createPersistedStateXml(
+    const juce::AudioProcessorValueTreeState& state,
+    const ParameterMap& storedSnapshotIn,
+    const ParameterMap& compareSnapshotIn,
+    const ParameterMap& abAIn,
+    const ParameterMap& abBIn,
+    bool abSlotBIn,
+    bool comparingIn)
+{
+    auto root = std::make_unique<juce::XmlElement>("BORATO224_STATE");
+    root->setAttribute("version", 1);
+    root->setAttribute("abSlotB", abSlotBIn ? 1 : 0);
+    root->setAttribute("comparing", comparingIn ? 1 : 0);
+
+    root->addChildElement(state.state.createXml().release());
+    root->addChildElement(new juce::XmlElement(createParameterMapXml("STORED_SNAPSHOT", storedSnapshotIn)));
+    root->addChildElement(new juce::XmlElement(createParameterMapXml("COMPARE_SNAPSHOT", compareSnapshotIn)));
+    root->addChildElement(new juce::XmlElement(createParameterMapXml("AB_A", abAIn)));
+    root->addChildElement(new juce::XmlElement(createParameterMapXml("AB_B", abBIn)));
+    return root;
+}
+
+void Borato224AudioProcessor::restorePersistedState(const juce::XmlElement& element)
+{
+    if (auto* child = element.getFirstChildElement())
+    {
+        while (child != nullptr)
+        {
+            const auto tag = child->getTagName();
+            if (tag != "STORED_SNAPSHOT" && tag != "COMPARE_SNAPSHOT" && tag != "AB_A" && tag != "AB_B")
+            {
+                apvts.replaceState(juce::ValueTree::fromXml(*child));
+                break;
+            }
+
+            child = child->getNextElement();
+        }
+    }
+
+    if (auto* stored = element.getChildByName("STORED_SNAPSHOT"))
+        storedSnapshot = parseParameterMapXml(*stored);
+    else
+        storedSnapshot = captureEditableParameters(apvts);
+
+    if (auto* compare = element.getChildByName("COMPARE_SNAPSHOT"))
+        compareSnapshot = parseParameterMapXml(*compare);
+    else
+        compareSnapshot.clear();
+
+    if (auto* a = element.getChildByName("AB_A"))
+        abA = parseParameterMapXml(*a);
+    else
+        abA = storedSnapshot;
+
+    if (auto* b = element.getChildByName("AB_B"))
+        abB = parseParameterMapXml(*b);
+    else
+        abB = storedSnapshot;
+
+    abSlotB = element.getBoolAttribute("abSlotB", false);
+    comparing = element.getBoolAttribute("comparing", false);
 }
 
 void Borato224AudioProcessor::setParameterValue(juce::AudioProcessorValueTreeState& state, const juce::String& id, float value)

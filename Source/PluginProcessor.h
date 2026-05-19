@@ -50,6 +50,16 @@ private:
     static void setParameterValue(juce::AudioProcessorValueTreeState& state, const juce::String& id, float value);
     static ParameterMap captureEditableParameters(const juce::AudioProcessorValueTreeState& state);
     static void applyParameterMap(juce::AudioProcessorValueTreeState& state, const ParameterMap& map);
+    static juce::XmlElement createParameterMapXml(const juce::String& tagName, const ParameterMap& map);
+    static ParameterMap parseParameterMapXml(const juce::XmlElement& element);
+    static std::unique_ptr<juce::XmlElement> createPersistedStateXml(const juce::AudioProcessorValueTreeState& state,
+                                                                    const ParameterMap& storedSnapshot,
+                                                                    const ParameterMap& compareSnapshot,
+                                                                    const ParameterMap& abA,
+                                                                    const ParameterMap& abB,
+                                                                    bool abSlotB,
+                                                                    bool comparing);
+    void restorePersistedState(const juce::XmlElement& element);
     static float randomRange(juce::Random& rng, float min, float max);
 
     std::atomic<float>* decayParam { nullptr };
