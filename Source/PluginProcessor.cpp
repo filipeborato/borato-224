@@ -73,6 +73,11 @@ void Borato224AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juc
                    decayParam->load(), preDelayParam->load(), bassParam->load(), midParam->load(),
                    trebleParam->load(), crossoverParam->load(), depthParam->load());
 
+    // Compensate for the internal attenuation of the FDN (injection ~0.21, output taps ~0.33, vintageGain ~0.78).
+    // This brings the wet signal to a perceptually comparable level with the dry signal at mix=50%.
+    static constexpr float wetMakeupGain = 2.2f; // approximately +6.8 dB
+    wetBuffer.applyGain(wetMakeupGain);
+
     for (int i = 0; i < numSamples; ++i)
     {
         const float mix = mixSmooth.getNextValue();
