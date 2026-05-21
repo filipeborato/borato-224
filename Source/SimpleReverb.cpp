@@ -37,6 +37,9 @@ constexpr std::array<std::array<float, 6>, 8> programEarlyGainScale {{
 
 constexpr float earlyAttackCrossfeed = 0.18f;
 constexpr float earlyAttackDirect = 1.0f - earlyAttackCrossfeed;
+constexpr float minimumTailModulationScale = 0.08f;
+constexpr float maximumTailModulationScale = 2.25f;
+constexpr float depthModRateTrim = 0.35f;
 
 float softLimit(float x) noexcept
 {
@@ -309,8 +312,11 @@ void SimpleReverb::updateRuntimeParameters(float decaySeconds, float bassDb, flo
 
     decaySeconds = juce::jlimit(0.25f, 12.0f, decaySeconds);
     const float depth = juce::jlimit(0.0f, 1.0f, (depthDb + 12.0f) / 24.0f);
-    currentModDepthSamples = (0.35f + currentShape.modulationDepth * 8.5f) * (0.12f + depth * 1.35f);
-    currentModRate = currentShape.modulationRate;
+    const float depthCurve = std::sqrt(depth);
+    const float programModDepthSamples = 0.55f + currentShape.modulationDepth * 11.0f;
+    const float depthScale = minimumTailModulationScale + depthCurve * maximumTailModulationScale;
+    currentModDepthSamples = programModDepthSamples * depthScale;
+    currentModRate = currentShape.modulationRate * (1.0f - depthModRateTrim * 0.5f + depthCurve * depthModRateTrim);
     currentDampCoeff = onePoleCoefficient(currentSampleRate, juce::jlimit(125.0f, 2000.0f, crossoverHz));
     currentTrebleGain = juce::Decibels::decibelsToGain(juce::jlimit(-12.0f, 12.0f, trebleDecayDb) * 0.30f);
     currentBassGain = juce::Decibels::decibelsToGain(juce::jlimit(-12.0f, 12.0f, bassDb) * 0.24f);
@@ -319,8 +325,7 @@ void SimpleReverb::updateRuntimeParameters(float decaySeconds, float bassDb, flo
     for (int i = 0; i < numLines; ++i)
     {
         const float delaySeconds = (baseDelaySamples[(size_t) i] * currentShape.size) / (float) currentSampleRate;
-        feedbackGain[(size_t) i] = std::pow(10.0f, -3.0f * delaySeconds / decaySeconds)
-                                 * currentShape.density;
+        feedbackGain[(size_t) i] = std::pow(10.0f, -3.0f * delaySeconds / decaySeconds);
     }
 }
 
@@ -335,7 +340,7 @@ juce::Point<float> SimpleReverb::processTankSample(float leftIn, float rightIn) 
             randomState ^= randomState >> 17;
             randomState ^= randomState << 5;
             const float unit = (float) (randomState & 0x00ffffffu) / (float) 0x00ffffffu;
-            target = (unit * 2.0f - 1.0f) * (0.75f + currentShape.modulationDepth * 2.0f);
+            target = (unit * 2.0f - 1.0f) * (0.35f + currentModDepthSamples * 0.32f);
         }
     }
 
@@ -368,8 +373,9 @@ juce::Point<float> SimpleReverb::processTankSample(float leftIn, float rightIn) 
     const std::array<float, numLines> mixed {{ a0, a1, a2, a3, a4, a5, a6, a7 }};
     const float inputMono = (leftIn + rightIn) * 0.5f;
     const float inputSide = (leftIn - rightIn) * 0.5f;
-    const float injectL = inputMono * 0.30f + inputSide * 0.10f;
-    const float injectR = inputMono * 0.30f - inputSide * 0.10f;
+    const float densityDrive = 0.72f + currentShape.density * 0.34f;
+    const float injectL = (inputMono * 0.30f + inputSide * 0.10f) * densityDrive;
+    const float injectR = (inputMono * 0.30f - inputSide * 0.10f) * densityDrive;
 
     for (int i = 0; i < numLines; ++i)
     {
