@@ -14,6 +14,26 @@ constexpr std::array<float, fdnLines> phaseOffsets {{
 
 constexpr std::array<float, 6> earlyTapMs {{ 7.0f, 13.0f, 19.0f, 29.0f, 41.0f, 53.0f }};
 constexpr std::array<float, 6> earlyTapGain {{ 0.45f, -0.34f, 0.26f, -0.22f, 0.18f, -0.15f }};
+constexpr std::array<std::array<float, 6>, 8> programEarlyTapScale {{
+    {{ 1.30f, 1.42f, 1.58f, 1.74f, 1.92f, 2.12f }}, // HALL
+    {{ 0.62f, 0.76f, 0.90f, 1.04f, 1.16f, 1.28f }}, // ROOM
+    {{ 0.86f, 1.04f, 1.22f, 1.46f, 1.70f, 1.96f }}, // PLATE
+    {{ 0.92f, 1.12f, 1.34f, 1.58f, 1.82f, 2.08f }}, // CHMBR
+    {{ 0.42f, 0.54f, 0.68f, 0.82f, 0.96f, 1.10f }}, // AMBI
+    {{ 1.55f, 1.78f, 2.04f, 2.34f, 2.68f, 3.04f }}, // SPACE
+    {{ 0.82f, 1.19f, 1.37f, 1.83f, 2.16f, 2.71f }}, // RANDOM
+    {{ 1.00f, 1.16f, 1.32f, 1.54f, 1.78f, 2.02f }}  // USER
+}};
+constexpr std::array<std::array<float, 6>, 8> programEarlyGainScale {{
+    {{ 0.78f, 0.84f, 0.90f, 0.96f, 1.00f, 1.06f }},
+    {{ 1.25f, 1.18f, 1.10f, 1.02f, 0.94f, 0.86f }},
+    {{ 0.82f, 0.78f, 0.74f, 0.70f, 0.66f, 0.62f }},
+    {{ 1.06f, 1.02f, 0.98f, 0.94f, 0.90f, 0.86f }},
+    {{ 1.45f, 1.28f, 1.12f, 0.96f, 0.82f, 0.70f }},
+    {{ 0.64f, 0.70f, 0.78f, 0.88f, 1.00f, 1.14f }},
+    {{ 1.04f, 0.82f, 1.18f, 0.74f, 1.08f, 0.92f }},
+    {{ 1.00f, 0.96f, 0.92f, 0.88f, 0.84f, 0.80f }}
+}};
 
 float softLimit(float x) noexcept
 {
@@ -108,8 +128,10 @@ void SimpleReverb::prepare(double sampleRate, int maximumBlockSize, int channels
     preDelaySamples = 0;
     preDelayWritePosition = 0;
     lfoPhase = 0.0f;
-    dcBlockL = 0.0f;
-    dcBlockR = 0.0f;
+    dcInputL = 0.0f;
+    dcInputR = 0.0f;
+    dcOutputL = 0.0f;
+    dcOutputR = 0.0f;
     randomState = 0x2241978u;
     randomCountdown = 0;
 
@@ -144,9 +166,12 @@ void SimpleReverb::reset()
     preDelayBuffer.clear();
     preDelayWritePosition = 0;
     std::fill(dampingState.begin(), dampingState.end(), 0.0f);
-    std::fill(previousLineOutput.begin(), previousLineOutput.end(), 0.0f);
     std::fill(randomModOffset.begin(), randomModOffset.end(), 0.0f);
     std::fill(randomModTarget.begin(), randomModTarget.end(), 0.0f);
+    dcInputL = 0.0f;
+    dcInputR = 0.0f;
+    dcOutputL = 0.0f;
+    dcOutputR = 0.0f;
 
     for (auto& line : tankLines)
         line.reset();
@@ -253,11 +278,15 @@ float SimpleReverb::processPreDelayAndEarly(int channel, float input) noexcept
     float delayed = readIntegerDelay(preDelaySamples);
     float early = 0.0f;
 
+    const auto program = (size_t) juce::jlimit(0, 7, currentProgram);
+    const auto& tapScale = programEarlyTapScale[program];
+    const auto& gainScale = programEarlyGainScale[program];
+
     for (size_t i = 0; i < earlyTapMs.size(); ++i)
     {
-        const int tap = (int) std::round(earlyTapMs[i] * 0.001f * (float) currentSampleRate * currentShape.size);
+        const int tap = (int) std::round(earlyTapMs[i] * tapScale[i] * 0.001f * (float) currentSampleRate * currentShape.size);
         const float polarity = channel == 0 ? 1.0f : ((i & 1U) != 0U ? -1.0f : 1.0f);
-        early += readIntegerDelay(tap) * earlyTapGain[i] * polarity;
+        early += readIntegerDelay(tap) * earlyTapGain[i] * gainScale[i] * polarity;
     }
 
     return delayed * 0.82f + early * currentShape.earlyLevel;
@@ -334,8 +363,8 @@ juce::Point<float> SimpleReverb::processTankSample(float leftIn, float rightIn) 
     const std::array<float, numLines> mixed {{ a0, a1, a2, a3, a4, a5, a6, a7 }};
     const float inputMono = (leftIn + rightIn) * 0.5f;
     const float inputSide = (leftIn - rightIn) * 0.5f;
-    const float injectL = inputMono * 0.21f + inputSide * 0.08f;
-    const float injectR = inputMono * 0.21f - inputSide * 0.08f;
+    const float injectL = inputMono * 0.30f + inputSide * 0.10f;
+    const float injectR = inputMono * 0.30f - inputSide * 0.10f;
 
     for (int i = 0; i < numLines; ++i)
     {
@@ -349,20 +378,26 @@ juce::Point<float> SimpleReverb::processTankSample(float leftIn, float rightIn) 
     if (lfoPhase > juce::MathConstants<float>::twoPi)
         lfoPhase -= juce::MathConstants<float>::twoPi;
 
-    float left = (reads[0] + reads[2] - reads[5] + reads[7]) * 0.33f;
-    float right = (reads[1] + reads[3] - reads[4] + reads[6]) * 0.33f;
+    constexpr float tankOutputScale = 0.35355339f;
+    float left = (reads[0] + reads[2] - reads[5] + reads[7]) * tankOutputScale;
+    float right = (reads[1] + reads[3] - reads[4] + reads[6]) * tankOutputScale;
     const float mid = (left + right) * 0.5f;
     const float side = (left - right) * 0.5f * currentShape.stereoWidth;
     left = mid + side;
     right = mid - side;
 
-    dcBlockL = left + dcBlockL * 0.995f;
-    dcBlockR = right + dcBlockR * 0.995f;
+    constexpr float dcBlockR = 0.995f;
+    const float dcFreeL = left - dcInputL + dcBlockR * dcOutputL;
+    const float dcFreeR = right - dcInputR + dcBlockR * dcOutputR;
+    dcInputL = left;
+    dcInputR = right;
+    dcOutputL = dcFreeL;
+    dcOutputR = dcFreeR;
 
-    const float vintageGain = 0.82f - currentShape.vintageDark * 0.12f;
+    const float vintageGain = 1.10f - currentShape.vintageDark * 0.10f;
     return {
-        juce::jlimit(-2.0f, 2.0f, softLimit((left - dcBlockL * 0.0008f) * vintageGain)),
-        juce::jlimit(-2.0f, 2.0f, softLimit((right - dcBlockR * 0.0008f) * vintageGain))
+        juce::jlimit(-2.0f, 2.0f, softLimit(dcFreeL * vintageGain)),
+        juce::jlimit(-2.0f, 2.0f, softLimit(dcFreeR * vintageGain))
     };
 }
 

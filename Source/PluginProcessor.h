@@ -69,6 +69,7 @@ private:
     std::atomic<float>* trebleParam { nullptr };
     std::atomic<float>* crossoverParam { nullptr };
     std::atomic<float>* depthParam { nullptr };
+    std::atomic<float>* programParam { nullptr };
     std::atomic<float>* mixParam { nullptr };
     std::atomic<float>* inputParam { nullptr };
     std::atomic<float>* outputParam { nullptr };
