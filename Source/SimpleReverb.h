@@ -67,7 +67,6 @@ private:
     std::array<float, numLines> baseDelaySamples {};
     std::array<float, numLines> linePhase {};
     std::array<float, numLines> dampingState {};
-    std::array<float, numLines> previousLineOutput {};
     std::array<float, numLines> feedbackGain {};
     std::array<float, numLines> randomModOffset {};
     std::array<float, numLines> randomModTarget {};
@@ -85,6 +84,8 @@ private:
     float currentModDepthSamples { 1.0f };
     float currentModRate { 0.15f };
     float lfoPhase { 0.0f };
-    float dcBlockL { 0.0f };
-    float dcBlockR { 0.0f };
+    float dcInputL { 0.0f };
+    float dcInputR { 0.0f };
+    float dcOutputL { 0.0f };
+    float dcOutputR { 0.0f };
 };

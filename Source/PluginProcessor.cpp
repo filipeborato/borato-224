@@ -14,6 +14,7 @@ Borato224AudioProcessor::Borato224AudioProcessor()
     trebleParam = apvts.getRawParameterValue(ParamIDs::trebleDecay);
     crossoverParam = apvts.getRawParameterValue(ParamIDs::crossover);
     depthParam = apvts.getRawParameterValue(ParamIDs::depth);
+    programParam = apvts.getRawParameterValue(ParamIDs::program);
     mixParam = apvts.getRawParameterValue(ParamIDs::mix);
     inputParam = apvts.getRawParameterValue(ParamIDs::input);
     outputParam = apvts.getRawParameterValue(ParamIDs::output);
@@ -51,34 +52,37 @@ void Borato224AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juc
     for (int ch = inputChannels; ch < outputChannels; ++ch)
         buffer.clear(ch, 0, numSamples);
 
-    wetBuffer.setSize(outputChannels, numSamples, false, false, true);
-    wetBuffer.makeCopyOf(buffer, true);
+    if (wetBuffer.getNumChannels() != outputChannels || wetBuffer.getNumSamples() != numSamples)
+        wetBuffer.setSize(outputChannels, numSamples, false, false, true);
+
+    for (int ch = 0; ch < outputChannels; ++ch)
+        wetBuffer.copyFrom(ch, 0, buffer, ch, 0, numSamples);
 
     inputSmooth.setTargetValue(juce::Decibels::decibelsToGain(inputParam->load()));
     outputSmooth.setTargetValue(juce::Decibels::decibelsToGain(outputParam->load()));
     mixSmooth.setTargetValue(mixParam->load() / 100.0f);
     bypassSmooth.setTargetValue(bypassParam->load() > 0.5f ? 1.0f : 0.0f);
 
-    for (int i = 0; i < numSamples; ++i)
+    if (numSamples > 0)
     {
-        const float inGain = inputSmooth.getNextValue();
+        const float inputStart = inputSmooth.getCurrentValue();
+        const float inputEnd = inputSmooth.skip(numSamples);
         for (int ch = 0; ch < outputChannels; ++ch)
-        {
-            auto* wet = wetBuffer.getWritePointer(ch);
-            wet[i] *= inGain;
-        }
+            wetBuffer.applyGainRamp(ch, 0, numSamples, inputStart, inputEnd);
     }
 
-    reverb.process(wetBuffer, (int) apvts.getRawParameterValue(ParamIDs::program)->load(),
+    reverb.process(wetBuffer, (int) programParam->load(),
                    decayParam->load(), preDelayParam->load(), bassParam->load(), midParam->load(),
                    trebleParam->load(), crossoverParam->load(), depthParam->load());
 
     for (int i = 0; i < numSamples; ++i)
     {
         const float mix = mixSmooth.getNextValue();
-        const float mixAngle = juce::jlimit(0.0f, 1.0f, mix) * juce::MathConstants<float>::halfPi;
+        const float mixNormalised = juce::jlimit(0.0f, 1.0f, mix);
+        const float mixAngle = mixNormalised * juce::MathConstants<float>::halfPi;
         const float dryMixGain = std::cos(mixAngle);
-        const float wetMixGain = std::sin(mixAngle);
+        const float wetPresence = 1.0f + 0.22f * std::sqrt(mixNormalised);
+        const float wetMixGain = std::sin(mixAngle) * wetPresence;
         const float bypass = bypassSmooth.getNextValue();
         const float outGain = outputSmooth.getNextValue();
 
@@ -99,7 +103,7 @@ juce::AudioProcessorEditor* Borato224AudioProcessor::createEditor()
 
 int Borato224AudioProcessor::getCurrentProgram()
 {
-    return (int) apvts.getRawParameterValue(ParamIDs::program)->load();
+    return (int) programParam->load();
 }
 
 void Borato224AudioProcessor::setCurrentProgram(int index)
@@ -145,6 +149,9 @@ void Borato224AudioProcessor::applyProgramPreset(int index)
     const auto& p = programPresets[(size_t) index];
     setParameterValue(apvts, ParamIDs::program, (float) index);
 
+    if (index == 7)
+        return;
+
     if (index == 6)
     {
         setParameterValue(apvts, ParamIDs::decay, randomRange(randomPresetRng, 1.20f, 8.80f));
@@ -154,7 +161,7 @@ void Borato224AudioProcessor::applyProgramPreset(int index)
         setParameterValue(apvts, ParamIDs::trebleDecay, randomRange(randomPresetRng, -7.5f, 2.5f));
         setParameterValue(apvts, ParamIDs::crossover, randomRange(randomPresetRng, 180.0f, 1450.0f));
         setParameterValue(apvts, ParamIDs::depth, randomRange(randomPresetRng, 1.5f, 10.0f));
-        setParameterValue(apvts, ParamIDs::mix, randomRange(randomPresetRng, 22.0f, 42.0f));
+        setParameterValue(apvts, ParamIDs::mix, randomRange(randomPresetRng, 18.0f, 58.0f));
         return;
     }
 
