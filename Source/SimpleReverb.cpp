@@ -35,6 +35,12 @@ constexpr std::array<std::array<float, 6>, 8> programEarlyGainScale {{
     {{ 1.00f, 0.96f, 0.92f, 0.88f, 0.84f, 0.80f }}
 }};
 
+constexpr float earlyAttackCrossfeed = 0.18f;
+constexpr float earlyAttackDirect = 1.0f - earlyAttackCrossfeed;
+constexpr float minimumTailModulationScale = 0.08f;
+constexpr float maximumTailModulationScale = 2.25f;
+constexpr float depthModRateTrim = 0.35f;
+
 float softLimit(float x) noexcept
 {
     return x * (1.0f / (1.0f + 0.18f * std::abs(x)));
@@ -147,7 +153,7 @@ void SimpleReverb::prepare(double sampleRate, int maximumBlockSize, int channels
         linePhase[(size_t) i] = phaseOffsets[(size_t) i];
     }
 
-    constexpr std::array<float, numDiffusers> diffuserMs {{ 4.7f, 8.3f, 13.1f, 21.7f }};
+    constexpr std::array<float, numDiffusers> diffuserMs {{ 1.6f, 3.7f, 7.9f, 13.4f }};
     for (int ch = 0; ch < maxChannels; ++ch)
     {
         for (int i = 0; i < numDiffusers; ++i)
@@ -209,8 +215,10 @@ void SimpleReverb::process(juce::AudioBuffer<float>& buffer, int program, float 
         const float inL = buffer.getReadPointer(0)[i];
         const float inR = channels > 1 ? buffer.getReadPointer(1)[i] : inL;
 
-        float tankInL = processPreDelayAndEarly(0, inL);
-        float tankInR = processPreDelayAndEarly(1, inR);
+        const float earlySourceL = processPreDelayAndEarly(0, inL);
+        const float earlySourceR = processPreDelayAndEarly(1, inR);
+        float tankInL = earlySourceL;
+        float tankInR = earlySourceR;
 
         for (auto& diffuser : inputDiffusers[0])
             tankInL = diffuser.process(tankInL);
@@ -221,10 +229,12 @@ void SimpleReverb::process(juce::AudioBuffer<float>& buffer, int program, float 
             preDelayWritePosition = 0;
 
         const auto tankOut = processTankSample(tankInL, tankInR);
+        const float earlyAttackL = (earlySourceL * earlyAttackDirect + earlySourceR * earlyAttackCrossfeed) * currentShape.earlyAttackLevel;
+        const float earlyAttackR = (earlySourceR * earlyAttackDirect + earlySourceL * earlyAttackCrossfeed) * currentShape.earlyAttackLevel;
 
-        buffer.getWritePointer(0)[i] = tankOut.x;
+        buffer.getWritePointer(0)[i] = juce::jlimit(-2.0f, 2.0f, softLimit(tankOut.x + earlyAttackL));
         if (channels > 1)
-            buffer.getWritePointer(1)[i] = tankOut.y;
+            buffer.getWritePointer(1)[i] = juce::jlimit(-2.0f, 2.0f, softLimit(tankOut.y + earlyAttackR));
     }
 
     for (int ch = channels; ch < buffer.getNumChannels(); ++ch)
@@ -304,8 +314,11 @@ void SimpleReverb::updateRuntimeParameters(float decaySeconds, float bassDb, flo
 
     decaySeconds = juce::jlimit(0.25f, 12.0f, decaySeconds);
     const float depth = juce::jlimit(0.0f, 1.0f, (depthDb + 12.0f) / 24.0f);
-    currentModDepthSamples = (0.35f + currentShape.modulationDepth * 8.5f) * (0.12f + depth * 1.35f);
-    currentModRate = currentShape.modulationRate;
+    const float depthCurve = std::sqrt(depth);
+    const float programModDepthSamples = 0.55f + currentShape.modulationDepth * 11.0f;
+    const float depthScale = minimumTailModulationScale + depthCurve * maximumTailModulationScale;
+    currentModDepthSamples = programModDepthSamples * depthScale;
+    currentModRate = currentShape.modulationRate * (1.0f - depthModRateTrim * 0.5f + depthCurve * depthModRateTrim);
     currentDampCoeff = onePoleCoefficient(currentSampleRate, juce::jlimit(125.0f, 2000.0f, crossoverHz));
     currentTrebleGain = juce::Decibels::decibelsToGain(juce::jlimit(-12.0f, 12.0f, trebleDecayDb) * 0.30f);
     currentBassGain = juce::Decibels::decibelsToGain(juce::jlimit(-12.0f, 12.0f, bassDb) * 0.24f);
@@ -314,8 +327,7 @@ void SimpleReverb::updateRuntimeParameters(float decaySeconds, float bassDb, flo
     for (int i = 0; i < numLines; ++i)
     {
         const float delaySeconds = (baseDelaySamples[(size_t) i] * currentShape.size) / (float) currentSampleRate;
-        feedbackGain[(size_t) i] = std::pow(10.0f, -3.0f * delaySeconds / decaySeconds)
-                                 * currentShape.density;
+        feedbackGain[(size_t) i] = std::pow(10.0f, -3.0f * delaySeconds / decaySeconds);
     }
 }
 
@@ -330,7 +342,7 @@ juce::Point<float> SimpleReverb::processTankSample(float leftIn, float rightIn) 
             randomState ^= randomState >> 17;
             randomState ^= randomState << 5;
             const float unit = (float) (randomState & 0x00ffffffu) / (float) 0x00ffffffu;
-            target = (unit * 2.0f - 1.0f) * (0.75f + currentShape.modulationDepth * 2.0f);
+            target = (unit * 2.0f - 1.0f) * (0.35f + currentModDepthSamples * 0.32f);
         }
     }
 
@@ -363,8 +375,9 @@ juce::Point<float> SimpleReverb::processTankSample(float leftIn, float rightIn) 
     const std::array<float, numLines> mixed {{ a0, a1, a2, a3, a4, a5, a6, a7 }};
     const float inputMono = (leftIn + rightIn) * 0.5f;
     const float inputSide = (leftIn - rightIn) * 0.5f;
-    const float injectL = inputMono * 0.30f + inputSide * 0.10f;
-    const float injectR = inputMono * 0.30f - inputSide * 0.10f;
+    const float densityDrive = 0.72f + currentShape.density * 0.34f;
+    const float injectL = (inputMono * 0.30f + inputSide * 0.10f) * densityDrive;
+    const float injectR = (inputMono * 0.30f - inputSide * 0.10f) * densityDrive;
 
     for (int i = 0; i < numLines; ++i)
     {
@@ -396,8 +409,8 @@ juce::Point<float> SimpleReverb::processTankSample(float leftIn, float rightIn) 
 
     const float vintageGain = 1.10f - currentShape.vintageDark * 0.10f;
     return {
-        juce::jlimit(-2.0f, 2.0f, softLimit(dcFreeL * vintageGain)),
-        juce::jlimit(-2.0f, 2.0f, softLimit(dcFreeR * vintageGain))
+        dcFreeL * vintageGain,
+        dcFreeR * vintageGain
     };
 }
 
@@ -405,13 +418,13 @@ SimpleReverb::ProgramShape SimpleReverb::getProgramShape(int program) noexcept
 {
     switch (juce::jlimit(0, 7, program))
     {
-        case 0: return { 0.66f, 0.92f, 0.18f, 0.42f, 1.18f, 0.22f, 1.08f, 0.36f }; // HALL
-        case 1: return { 0.52f, 0.78f, 0.11f, 0.18f, 0.74f, 0.62f, 0.82f, 0.50f }; // ROOM
-        case 2: return { 0.72f, 0.86f, 0.15f, 0.25f, 0.92f, 0.18f, 0.96f, 0.18f }; // PLATE
-        case 3: return { 0.60f, 0.84f, 0.13f, 0.22f, 0.95f, 0.42f, 0.88f, 0.42f }; // CHMBR
-        case 4: return { 0.45f, 0.66f, 0.08f, 0.10f, 0.54f, 0.82f, 0.72f, 0.62f }; // AMBI
-        case 5: return { 0.74f, 0.95f, 0.21f, 0.62f, 1.42f, 0.18f, 1.20f, 0.34f }; // SPACE
-        case 6: return { 0.69f, 0.90f, 0.27f, 0.86f, 1.05f, 0.26f, 1.02f, 0.44f }; // RANDOM
-        default: return { 0.63f, 0.86f, 0.16f, 0.35f, 1.00f, 0.34f, 1.00f, 0.38f }; // USER
+        case 0: return { 0.66f, 0.92f, 0.18f, 0.42f, 1.18f, 0.22f, 0.11f, 1.08f, 0.36f }; // HALL
+        case 1: return { 0.52f, 0.78f, 0.11f, 0.18f, 0.74f, 0.62f, 0.23f, 0.82f, 0.50f }; // ROOM
+        case 2: return { 0.72f, 0.86f, 0.15f, 0.25f, 0.92f, 0.18f, 0.10f, 0.96f, 0.18f }; // PLATE
+        case 3: return { 0.60f, 0.84f, 0.13f, 0.22f, 0.95f, 0.42f, 0.17f, 0.88f, 0.42f }; // CHMBR
+        case 4: return { 0.45f, 0.66f, 0.08f, 0.10f, 0.54f, 0.82f, 0.28f, 0.72f, 0.62f }; // AMBI
+        case 5: return { 0.74f, 0.95f, 0.21f, 0.62f, 1.42f, 0.18f, 0.08f, 1.20f, 0.34f }; // SPACE
+        case 6: return { 0.69f, 0.90f, 0.27f, 0.86f, 1.05f, 0.26f, 0.14f, 1.02f, 0.44f }; // RANDOM
+        default: return { 0.63f, 0.86f, 0.16f, 0.35f, 1.00f, 0.34f, 0.15f, 1.00f, 0.38f }; // USER
     }
 }
