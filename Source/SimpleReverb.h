@@ -45,6 +45,7 @@ private:
         float modulationDepth;
         float size;
         float earlyLevel;
+        float earlyAttackLevel;
         float stereoWidth;
         float vintageDark;
     };

@@ -147,7 +147,7 @@ void SimpleReverb::prepare(double sampleRate, int maximumBlockSize, int channels
         linePhase[(size_t) i] = phaseOffsets[(size_t) i];
     }
 
-    constexpr std::array<float, numDiffusers> diffuserMs {{ 4.7f, 8.3f, 13.1f, 21.7f }};
+    constexpr std::array<float, numDiffusers> diffuserMs {{ 1.6f, 3.7f, 7.9f, 13.4f }};
     for (int ch = 0; ch < maxChannels; ++ch)
     {
         for (int i = 0; i < numDiffusers; ++i)
@@ -221,10 +221,12 @@ void SimpleReverb::process(juce::AudioBuffer<float>& buffer, int program, float 
             preDelayWritePosition = 0;
 
         const auto tankOut = processTankSample(tankInL, tankInR);
+        const float earlyAttackL = (inL * 0.82f + inR * 0.18f) * currentShape.earlyAttackLevel;
+        const float earlyAttackR = (inR * 0.82f + inL * 0.18f) * currentShape.earlyAttackLevel;
 
-        buffer.getWritePointer(0)[i] = tankOut.x;
+        buffer.getWritePointer(0)[i] = softLimit(tankOut.x + earlyAttackL);
         if (channels > 1)
-            buffer.getWritePointer(1)[i] = tankOut.y;
+            buffer.getWritePointer(1)[i] = softLimit(tankOut.y + earlyAttackR);
     }
 
     for (int ch = channels; ch < buffer.getNumChannels(); ++ch)
@@ -405,13 +407,13 @@ SimpleReverb::ProgramShape SimpleReverb::getProgramShape(int program) noexcept
 {
     switch (juce::jlimit(0, 7, program))
     {
-        case 0: return { 0.66f, 0.92f, 0.18f, 0.42f, 1.18f, 0.22f, 1.08f, 0.36f }; // HALL
-        case 1: return { 0.52f, 0.78f, 0.11f, 0.18f, 0.74f, 0.62f, 0.82f, 0.50f }; // ROOM
-        case 2: return { 0.72f, 0.86f, 0.15f, 0.25f, 0.92f, 0.18f, 0.96f, 0.18f }; // PLATE
-        case 3: return { 0.60f, 0.84f, 0.13f, 0.22f, 0.95f, 0.42f, 0.88f, 0.42f }; // CHMBR
-        case 4: return { 0.45f, 0.66f, 0.08f, 0.10f, 0.54f, 0.82f, 0.72f, 0.62f }; // AMBI
-        case 5: return { 0.74f, 0.95f, 0.21f, 0.62f, 1.42f, 0.18f, 1.20f, 0.34f }; // SPACE
-        case 6: return { 0.69f, 0.90f, 0.27f, 0.86f, 1.05f, 0.26f, 1.02f, 0.44f }; // RANDOM
-        default: return { 0.63f, 0.86f, 0.16f, 0.35f, 1.00f, 0.34f, 1.00f, 0.38f }; // USER
+        case 0: return { 0.66f, 0.92f, 0.18f, 0.42f, 1.18f, 0.22f, 0.11f, 1.08f, 0.36f }; // HALL
+        case 1: return { 0.52f, 0.78f, 0.11f, 0.18f, 0.74f, 0.62f, 0.23f, 0.82f, 0.50f }; // ROOM
+        case 2: return { 0.72f, 0.86f, 0.15f, 0.25f, 0.92f, 0.18f, 0.10f, 0.96f, 0.18f }; // PLATE
+        case 3: return { 0.60f, 0.84f, 0.13f, 0.22f, 0.95f, 0.42f, 0.17f, 0.88f, 0.42f }; // CHMBR
+        case 4: return { 0.45f, 0.66f, 0.08f, 0.10f, 0.54f, 0.82f, 0.28f, 0.72f, 0.62f }; // AMBI
+        case 5: return { 0.74f, 0.95f, 0.21f, 0.62f, 1.42f, 0.18f, 0.08f, 1.20f, 0.34f }; // SPACE
+        case 6: return { 0.69f, 0.90f, 0.27f, 0.86f, 1.05f, 0.26f, 0.14f, 1.02f, 0.44f }; // RANDOM
+        default: return { 0.63f, 0.86f, 0.16f, 0.35f, 1.00f, 0.34f, 0.15f, 1.00f, 0.38f }; // USER
     }
 }
