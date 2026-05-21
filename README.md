@@ -15,16 +15,58 @@ Borato 224 is a vintage digital reverb plugin inspired by the workflow and hardw
 
 Recommended toolchains:
 
-- Windows: Visual Studio 2022 or 2026 with the C++ desktop workload.
+- Windows: Visual Studio 2026/2022 with the C++ desktop workload, or another CMake-compatible C++20 toolchain.
 - macOS: Xcode command line tools or full Xcode.
 - Linux: GCC or Clang, plus the system packages required by JUCE.
 
+### Choosing a CMake Generator
+
+This project is generator-agnostic: use any CMake generator supported by your local compiler, JUCE checkout, and plugin SDK setup.
+
+List the generators available on your machine:
+
+```bash
+cmake --help
+```
+
+Common choices:
+
+```text
+Visual Studio 18 2026    Windows + MSVC 2026
+Visual Studio 17 2022    Windows + MSVC 2022
+Ninja                    Windows/macOS/Linux with Ninja installed
+Unix Makefiles           macOS/Linux, or Windows environments that provide make
+Xcode                    macOS + Xcode
+```
+
+If CMake reports `could not find any instance of Visual Studio`, that Visual Studio version is not installed or not visible to CMake. Pick another generator from `cmake --help`, install the missing toolchain, or use a fresh build directory.
+
 ### Windows
 
-Configure with Visual Studio 2022:
+Configure with the installed Visual Studio generator. Example for Visual Studio 2026:
 
 ```powershell
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DBORATO224_JUCE_SOURCE_DIR=C:\JUCE
+cmake -S . -B build -G "Visual Studio 18 2026" -A x64 -DBORATO224_JUCE_SOURCE_DIR=C:\JUCE
+```
+
+If you have Visual Studio 2022 installed instead, use:
+
+```powershell
+cmake -S . -B build-vs2022 -G "Visual Studio 17 2022" -A x64 -DBORATO224_JUCE_SOURCE_DIR=C:\JUCE
+```
+
+Example with Ninja, if Ninja and a C++20 compiler are installed and available in the current shell:
+
+```powershell
+cmake -S . -B build-ninja -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBORATO224_JUCE_SOURCE_DIR=C:\JUCE
+cmake --build build-ninja
+```
+
+Release with Ninja:
+
+```powershell
+cmake -S . -B build-ninja-release -G Ninja -DCMAKE_BUILD_TYPE=Release -DBORATO224_JUCE_SOURCE_DIR=C:\JUCE
+cmake --build build-ninja-release
 ```
 
 Build Debug:
@@ -39,18 +81,31 @@ Build Release:
 cmake --build build --config Release
 ```
 
-The VST3 output is usually generated under:
+The VST3 output is generated under:
 
 ```text
 build/Borato224_artefacts/Debug/VST3/Borato 224.vst3
 build/Borato224_artefacts/Release/VST3/Borato 224.vst3
 ```
 
-If CMake reconfiguration fails because it points to a missing MSVC toolset, remove the stale build folder or configure a new one:
+By default the CMake build does not install the plugin into `C:\Program Files\Common Files\VST3`, because that usually requires administrator permissions. To enable post-build copying to the system VST3 folder, configure with:
 
 ```powershell
-cmake -S . -B build-vs2022 -G "Visual Studio 17 2022" -A x64 -DBORATO224_JUCE_SOURCE_DIR=C:\JUCE
-cmake --build build-vs2022 --config Debug
+cmake -S . -B build -G "Visual Studio 18 2026" -A x64 -DBORATO224_JUCE_SOURCE_DIR=C:\JUCE -DBORATO224_COPY_PLUGIN_AFTER_BUILD=ON
+```
+
+If CMake reconfiguration fails because it points to a missing MSVC toolset, the build directory has stale compiler cache. Reconfigure the existing build directory with the installed generator:
+
+```powershell
+cmake -S . -B build -G "Visual Studio 18 2026" -A x64 -DBORATO224_JUCE_SOURCE_DIR=C:\JUCE
+cmake --build build --config Debug
+```
+
+Or create a fresh build directory:
+
+```powershell
+cmake -S . -B build-vs2026 -G "Visual Studio 18 2026" -A x64 -DBORATO224_JUCE_SOURCE_DIR=C:\JUCE
+cmake --build build-vs2026 --config Debug
 ```
 
 ### macOS
@@ -65,6 +120,33 @@ Configure with a local JUCE checkout:
 
 ```bash
 cmake -S . -B build -DBORATO224_JUCE_SOURCE_DIR=/path/to/JUCE
+```
+
+Optional Xcode generator:
+
+```bash
+cmake -S . -B build-xcode -G Xcode -DBORATO224_JUCE_SOURCE_DIR=/path/to/JUCE
+cmake --build build-xcode --config Debug
+```
+
+Release with Xcode:
+
+```bash
+cmake --build build-xcode --config Release
+```
+
+Optional Ninja generator:
+
+```bash
+cmake -S . -B build-ninja -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBORATO224_JUCE_SOURCE_DIR=/path/to/JUCE
+cmake --build build-ninja
+```
+
+Release with Ninja:
+
+```bash
+cmake -S . -B build-ninja-release -G Ninja -DCMAKE_BUILD_TYPE=Release -DBORATO224_JUCE_SOURCE_DIR=/path/to/JUCE
+cmake --build build-ninja-release
 ```
 
 Build Debug:
@@ -96,6 +178,23 @@ Configure:
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBORATO224_JUCE_SOURCE_DIR=/path/to/JUCE
+```
+
+Equivalent explicit generator examples:
+
+```bash
+cmake -S . -B build-ninja -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBORATO224_JUCE_SOURCE_DIR=/path/to/JUCE
+cmake -S . -B build-make -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DBORATO224_JUCE_SOURCE_DIR=/path/to/JUCE
+```
+
+Release with explicit generators:
+
+```bash
+cmake -S . -B build-ninja-release -G Ninja -DCMAKE_BUILD_TYPE=Release -DBORATO224_JUCE_SOURCE_DIR=/path/to/JUCE
+cmake --build build-ninja-release
+
+cmake -S . -B build-make-release -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBORATO224_JUCE_SOURCE_DIR=/path/to/JUCE
+cmake --build build-make-release
 ```
 
 Build:
