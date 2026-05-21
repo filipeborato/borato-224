@@ -35,6 +35,9 @@ constexpr std::array<std::array<float, 6>, 8> programEarlyGainScale {{
     {{ 1.00f, 0.96f, 0.92f, 0.88f, 0.84f, 0.80f }}
 }};
 
+constexpr float earlyAttackCrossfeed = 0.18f;
+constexpr float earlyAttackDirect = 1.0f - earlyAttackCrossfeed;
+
 float softLimit(float x) noexcept
 {
     return x * (1.0f / (1.0f + 0.18f * std::abs(x)));
@@ -221,12 +224,12 @@ void SimpleReverb::process(juce::AudioBuffer<float>& buffer, int program, float 
             preDelayWritePosition = 0;
 
         const auto tankOut = processTankSample(tankInL, tankInR);
-        const float earlyAttackL = (inL * 0.82f + inR * 0.18f) * currentShape.earlyAttackLevel;
-        const float earlyAttackR = (inR * 0.82f + inL * 0.18f) * currentShape.earlyAttackLevel;
+        const float earlyAttackL = (inL * earlyAttackDirect + inR * earlyAttackCrossfeed) * currentShape.earlyAttackLevel;
+        const float earlyAttackR = (inR * earlyAttackDirect + inL * earlyAttackCrossfeed) * currentShape.earlyAttackLevel;
 
-        buffer.getWritePointer(0)[i] = softLimit(tankOut.x + earlyAttackL);
+        buffer.getWritePointer(0)[i] = juce::jlimit(-2.0f, 2.0f, softLimit(tankOut.x + earlyAttackL));
         if (channels > 1)
-            buffer.getWritePointer(1)[i] = softLimit(tankOut.y + earlyAttackR);
+            buffer.getWritePointer(1)[i] = juce::jlimit(-2.0f, 2.0f, softLimit(tankOut.y + earlyAttackR));
     }
 
     for (int ch = channels; ch < buffer.getNumChannels(); ++ch)
@@ -398,8 +401,8 @@ juce::Point<float> SimpleReverb::processTankSample(float leftIn, float rightIn) 
 
     const float vintageGain = 1.10f - currentShape.vintageDark * 0.10f;
     return {
-        juce::jlimit(-2.0f, 2.0f, softLimit(dcFreeL * vintageGain)),
-        juce::jlimit(-2.0f, 2.0f, softLimit(dcFreeR * vintageGain))
+        dcFreeL * vintageGain,
+        dcFreeR * vintageGain
     };
 }
 
