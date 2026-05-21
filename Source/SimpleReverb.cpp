@@ -215,8 +215,10 @@ void SimpleReverb::process(juce::AudioBuffer<float>& buffer, int program, float 
         const float inL = buffer.getReadPointer(0)[i];
         const float inR = channels > 1 ? buffer.getReadPointer(1)[i] : inL;
 
-        float tankInL = processPreDelayAndEarly(0, inL);
-        float tankInR = processPreDelayAndEarly(1, inR);
+        const float earlySourceL = processPreDelayAndEarly(0, inL);
+        const float earlySourceR = processPreDelayAndEarly(1, inR);
+        float tankInL = earlySourceL;
+        float tankInR = earlySourceR;
 
         for (auto& diffuser : inputDiffusers[0])
             tankInL = diffuser.process(tankInL);
@@ -227,8 +229,8 @@ void SimpleReverb::process(juce::AudioBuffer<float>& buffer, int program, float 
             preDelayWritePosition = 0;
 
         const auto tankOut = processTankSample(tankInL, tankInR);
-        const float earlyAttackL = (inL * earlyAttackDirect + inR * earlyAttackCrossfeed) * currentShape.earlyAttackLevel;
-        const float earlyAttackR = (inR * earlyAttackDirect + inL * earlyAttackCrossfeed) * currentShape.earlyAttackLevel;
+        const float earlyAttackL = (earlySourceL * earlyAttackDirect + earlySourceR * earlyAttackCrossfeed) * currentShape.earlyAttackLevel;
+        const float earlyAttackR = (earlySourceR * earlyAttackDirect + earlySourceL * earlyAttackCrossfeed) * currentShape.earlyAttackLevel;
 
         buffer.getWritePointer(0)[i] = juce::jlimit(-2.0f, 2.0f, softLimit(tankOut.x + earlyAttackL));
         if (channels > 1)
