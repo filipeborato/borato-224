@@ -1,0 +1,284 @@
+name: Build Release Artifacts
+
+on:
+  push:
+    branches:
+      - master
+      - "release/**"
+      - "ci/**"
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  BORATO224_VERSION: "0.0.3"
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    name: macOS Release
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Configure
+        run: >
+          cmake -S . -B build
+          -G Xcode
+          -DBORATO224_FETCH_JUCE=ON
+          -DBORATO224_COPY_PLUGIN_AFTER_BUILD=OFF
+          -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO
+          -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=NO
+          -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY=""
+
+      - name: Build Release
+        run: cmake --build build --config Release
+
+      - name: Package artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          artifact_root="build/Borato224_artefacts/Release"
+          dist="dist"
+          mkdir -p "$dist"
+
+          vst3="$artifact_root/VST3/Borato 224.vst3"
+          au="$artifact_root/AU/Borato 224.component"
+          standalone="$artifact_root/Standalone/Borato 224.app"
+
+          test -d "$vst3"
+          test -d "$au"
+          test -d "$standalone"
+
+          ditto -c -k --keepParent "$vst3" "$dist/Borato224-v${BORATO224_VERSION}-macOS-VST3.zip"
+          ditto -c -k --keepParent "$au" "$dist/Borato224-v${BORATO224_VERSION}-macOS-AU.zip"
+          ditto -c -k --keepParent "$standalone" "$dist/Borato224-v${BORATO224_VERSION}-macOS-Standalone.zip"
+
+          cat > "$dist/INSTALL-macOS.md" <<'EOF'
+          # Borato 224 macOS install
+
+          These artifacts are unsigned development builds.
+
+          ## VST3
+
+          Unzip `Borato224-v0.0.3-macOS-VST3.zip` and copy `Borato 224.vst3` to:
+
+          ```text
+          ~/Library/Audio/Plug-Ins/VST3/
+          ```
+
+          ## AU
+
+          Unzip `Borato224-v0.0.3-macOS-AU.zip` and copy `Borato 224.component` to:
+
+          ```text
+          ~/Library/Audio/Plug-Ins/Components/
+          ```
+
+          ## Standalone
+
+          Unzip `Borato224-v0.0.3-macOS-Standalone.zip` and move `Borato 224.app` to `/Applications` or any local folder.
+
+          ## Gatekeeper note
+
+          Because these builds are not notarized, macOS may block them the first time. If needed, remove quarantine after unzipping:
+
+          ```bash
+          xattr -dr com.apple.quarantine "Borato 224.vst3"
+          xattr -dr com.apple.quarantine "Borato 224.component"
+          xattr -dr com.apple.quarantine "Borato 224.app"
+          ```
+          EOF
+
+          ls -la "$dist"
+
+      - name: Upload VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v0.0.3-macOS-VST3
+          path: dist/Borato224-v0.0.3-macOS-VST3.zip
+          if-no-files-found: error
+
+      - name: Upload AU
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v0.0.3-macOS-AU
+          path: dist/Borato224-v0.0.3-macOS-AU.zip
+          if-no-files-found: error
+
+      - name: Upload Standalone
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v0.0.3-macOS-Standalone
+          path: dist/Borato224-v0.0.3-macOS-Standalone.zip
+          if-no-files-found: error
+
+      - name: Upload install notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v0.0.3-macOS-install-notes
+          path: dist/INSTALL-macOS.md
+          if-no-files-found: error
+
+      - name: Upload release bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v0.0.3-macOS-release-assets
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Attach assets to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            dist/Borato224-v0.0.3-macOS-VST3.zip
+            dist/Borato224-v0.0.3-macOS-AU.zip
+            dist/Borato224-v0.0.3-macOS-Standalone.zip
+            dist/INSTALL-macOS.md
+
+  build-ubuntu:
+    name: Ubuntu Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install JUCE Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            ninja-build \
+            pkg-config \
+            libasound2-dev \
+            libjack-jackd2-dev \
+            libfreetype6-dev \
+            libfontconfig1-dev \
+            libx11-dev \
+            libxcomposite-dev \
+            libxcursor-dev \
+            libxext-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libxrender-dev \
+            libwebkit2gtk-4.1-dev
+
+      - name: Configure
+        run: >
+          cmake -S . -B build
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DBORATO224_FETCH_JUCE=ON
+          -DBORATO224_COPY_PLUGIN_AFTER_BUILD=OFF
+
+      - name: Build Release
+        run: cmake --build build
+
+      - name: Package artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          artifact_root="build/Borato224_artefacts/Release"
+          dist="dist"
+          mkdir -p "$dist"
+
+          vst3="$artifact_root/VST3/Borato 224.vst3"
+          standalone="$artifact_root/Standalone/Borato 224"
+
+          test -d "$vst3"
+          test -f "$standalone"
+
+          tar -czf "$dist/Borato224-v${BORATO224_VERSION}-Ubuntu-VST3.tar.gz" -C "$artifact_root/VST3" "Borato 224.vst3"
+          tar -czf "$dist/Borato224-v${BORATO224_VERSION}-Ubuntu-Standalone.tar.gz" -C "$artifact_root/Standalone" "Borato 224"
+
+          cat > "$dist/INSTALL-Ubuntu.md" <<'EOF'
+          # Borato 224 Ubuntu install
+
+          These artifacts are unsigned development builds.
+
+          ## VST3
+
+          Extract `Borato224-v0.0.3-Ubuntu-VST3.tar.gz` and copy `Borato 224.vst3` to:
+
+          ```text
+          ~/.vst3/
+          ```
+
+          Example:
+
+          ```bash
+          mkdir -p ~/.vst3
+          tar -xzf Borato224-v0.0.3-Ubuntu-VST3.tar.gz
+          cp -R "Borato 224.vst3" ~/.vst3/
+          ```
+
+          Then rescan plugins in your DAW.
+
+          ## Standalone
+
+          Extract `Borato224-v0.0.3-Ubuntu-Standalone.tar.gz`, mark the app executable, and run it:
+
+          ```bash
+          tar -xzf Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
+          chmod +x "Borato 224"
+          ./"Borato 224"
+          ```
+
+          If the standalone app fails to start, install the JUCE runtime dependencies listed in the README Linux section.
+          EOF
+
+          ls -la "$dist"
+
+      - name: Upload VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v0.0.3-Ubuntu-VST3
+          path: dist/Borato224-v0.0.3-Ubuntu-VST3.tar.gz
+          if-no-files-found: error
+
+      - name: Upload Standalone
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v0.0.3-Ubuntu-Standalone
+          path: dist/Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
+          if-no-files-found: error
+
+      - name: Upload install notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v0.0.3-Ubuntu-install-notes
+          path: dist/INSTALL-Ubuntu.md
+          if-no-files-found: error
+
+      - name: Upload release bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v0.0.3-Ubuntu-release-assets
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Attach assets to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            dist/Borato224-v0.0.3-Ubuntu-VST3.tar.gz
+            dist/Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
+            dist/INSTALL-Ubuntu.md

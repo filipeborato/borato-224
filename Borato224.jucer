@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="B224" name="Borato224" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" companyName="Borato Audio"
-              companyWebsite="borato.audio" version="0.1.0" cppLanguageStandard="20"
+              companyWebsite="borato.audio" version="0.0.3" cppLanguageStandard="20"
               bundleIdentifier="com.boratoaudio.borato224" pluginName="Borato 224"
               pluginDesc="Borato 224" pluginManufacturer="Borato Audio" pluginManufacturerCode="Bora"
               pluginCode="B224" pluginChannelConfigs="{2,2}" pluginFormats="buildVST3,buildAU,buildStandalone">

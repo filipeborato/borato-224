@@ -212,6 +212,110 @@ cmake --build build-release
 
 Linux builds normally produce `VST3` and `Standalone`. AU is a macOS-only format.
 
+### GitHub Actions Release Artifacts
+
+The repository includes a release artifact workflow:
+
+```text
+.github/workflows/build-macos-release.yml
+```
+
+It builds Release artifacts on `macos-latest` and `ubuntu-latest`, downloading JUCE through CMake with `BORATO224_FETCH_JUCE=ON`.
+
+macOS artifacts:
+
+```text
+Borato224-v0.0.3-macOS-VST3.zip
+Borato224-v0.0.3-macOS-AU.zip
+Borato224-v0.0.3-macOS-Standalone.zip
+Borato224-v0.0.3-macOS-install-notes
+```
+
+Ubuntu artifacts:
+
+```text
+Borato224-v0.0.3-Ubuntu-VST3.tar.gz
+Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
+Borato224-v0.0.3-Ubuntu-install-notes
+```
+
+The workflow runs on pushes to `master`, `release/**`, `ci/**`, version tags such as `v0.0.3`, pull requests to `master`, and manual `workflow_dispatch`.
+
+To download the files:
+
+1. Open the repository on GitHub.
+2. Go to `Actions`.
+3. Open the latest `Build Release Artifacts` run.
+4. Download `Borato224-v0.0.3-macOS-release-assets` and/or `Borato224-v0.0.3-Ubuntu-release-assets` from the run summary.
+5. Extract the downloaded artifact bundle and attach the contained archives to the GitHub release.
+
+To create release assets automatically, push a version tag:
+
+```bash
+git tag v0.0.3
+git push origin v0.0.3
+```
+
+The workflow will build Release artifacts and create/update a draft GitHub Release for that tag with:
+
+```text
+Borato224-v0.0.3-macOS-VST3.zip
+Borato224-v0.0.3-macOS-AU.zip
+Borato224-v0.0.3-macOS-Standalone.zip
+INSTALL-macOS.md
+Borato224-v0.0.3-Ubuntu-VST3.tar.gz
+Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
+INSTALL-Ubuntu.md
+```
+
+#### Install on macOS
+
+Unzip the artifacts and install:
+
+```text
+Borato 224.vst3       -> ~/Library/Audio/Plug-Ins/VST3/
+Borato 224.component  -> ~/Library/Audio/Plug-Ins/Components/
+Borato 224.app        -> /Applications or any local folder
+```
+
+The current CI builds are unsigned and not notarized. If macOS blocks them after download, remove quarantine after unzipping:
+
+```bash
+xattr -dr com.apple.quarantine "Borato 224.vst3"
+xattr -dr com.apple.quarantine "Borato 224.component"
+xattr -dr com.apple.quarantine "Borato 224.app"
+```
+
+#### Install on Ubuntu
+
+Extract the VST3 archive and install it to your user VST3 folder:
+
+```bash
+mkdir -p ~/.vst3
+tar -xzf Borato224-v0.0.3-Ubuntu-VST3.tar.gz
+cp -R "Borato 224.vst3" ~/.vst3/
+```
+
+Then open your DAW and rescan plugins. Common Linux VST3 scan paths include:
+
+```text
+~/.vst3/
+/usr/local/lib/vst3/
+/usr/lib/vst3/
+```
+
+The per-user path `~/.vst3/` is recommended for testing because it does not require administrator permissions.
+
+To run the standalone Ubuntu build:
+
+```bash
+tar -xzf Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
+chmod +x "Borato 224"
+./"Borato 224"
+```
+
+If the standalone app does not start, install the same JUCE runtime dependencies listed in the Linux build section above.
+
 ### Projucer Workflow
 
 You can also open:
