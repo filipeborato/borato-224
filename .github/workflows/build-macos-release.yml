@@ -27,6 +27,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
@@ -54,14 +56,17 @@ jobs:
           mkdir -p "$dist"
 
           vst3="$artifact_root/VST3/Borato 224.vst3"
+          clap="$artifact_root/CLAP/Borato 224.clap"
           au="$artifact_root/AU/Borato 224.component"
           standalone="$artifact_root/Standalone/Borato 224.app"
 
           test -d "$vst3"
+          test -d "$clap"
           test -d "$au"
           test -d "$standalone"
 
           ditto -c -k --keepParent "$vst3" "$dist/Borato224-v${BORATO224_VERSION}-macOS-VST3.zip"
+          ditto -c -k --keepParent "$clap" "$dist/Borato224-v${BORATO224_VERSION}-macOS-CLAP.zip"
           ditto -c -k --keepParent "$au" "$dist/Borato224-v${BORATO224_VERSION}-macOS-AU.zip"
           ditto -c -k --keepParent "$standalone" "$dist/Borato224-v${BORATO224_VERSION}-macOS-Standalone.zip"
 
@@ -86,6 +91,14 @@ jobs:
           ~/Library/Audio/Plug-Ins/Components/
           ```
 
+          ## CLAP
+
+          Unzip `Borato224-v0.0.3-macOS-CLAP.zip` and copy `Borato 224.clap` to:
+
+          ```text
+          ~/Library/Audio/Plug-Ins/CLAP/
+          ```
+
           ## Standalone
 
           Unzip `Borato224-v0.0.3-macOS-Standalone.zip` and move `Borato 224.app` to `/Applications` or any local folder.
@@ -96,6 +109,7 @@ jobs:
 
           ```bash
           xattr -dr com.apple.quarantine "Borato 224.vst3"
+          xattr -dr com.apple.quarantine "Borato 224.clap"
           xattr -dr com.apple.quarantine "Borato 224.component"
           xattr -dr com.apple.quarantine "Borato 224.app"
           ```
@@ -115,6 +129,13 @@ jobs:
         with:
           name: Borato224-v0.0.3-macOS-AU
           path: dist/Borato224-v0.0.3-macOS-AU.zip
+          if-no-files-found: error
+
+      - name: Upload CLAP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v0.0.3-macOS-CLAP
+          path: dist/Borato224-v0.0.3-macOS-CLAP.zip
           if-no-files-found: error
 
       - name: Upload Standalone
@@ -145,6 +166,7 @@ jobs:
           draft: true
           files: |
             dist/Borato224-v0.0.3-macOS-VST3.zip
+            dist/Borato224-v0.0.3-macOS-CLAP.zip
             dist/Borato224-v0.0.3-macOS-AU.zip
             dist/Borato224-v0.0.3-macOS-Standalone.zip
             dist/INSTALL-macOS.md
@@ -156,6 +178,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install JUCE Linux dependencies
         run: |
@@ -199,12 +223,15 @@ jobs:
           mkdir -p "$dist"
 
           vst3="$artifact_root/VST3/Borato 224.vst3"
+          clap="$artifact_root/CLAP/Borato 224.clap"
           standalone="$artifact_root/Standalone/Borato 224"
 
           test -d "$vst3"
+          test -f "$clap"
           test -f "$standalone"
 
           tar -czf "$dist/Borato224-v${BORATO224_VERSION}-Ubuntu-VST3.tar.gz" -C "$artifact_root/VST3" "Borato 224.vst3"
+          tar -czf "$dist/Borato224-v${BORATO224_VERSION}-Ubuntu-CLAP.tar.gz" -C "$artifact_root/CLAP" "Borato 224.clap"
           tar -czf "$dist/Borato224-v${BORATO224_VERSION}-Ubuntu-Standalone.tar.gz" -C "$artifact_root/Standalone" "Borato 224"
 
           cat > "$dist/INSTALL-Ubuntu.md" <<'EOF'
@@ -226,6 +253,24 @@ jobs:
           mkdir -p ~/.vst3
           tar -xzf Borato224-v0.0.3-Ubuntu-VST3.tar.gz
           cp -R "Borato 224.vst3" ~/.vst3/
+          ```
+
+          Then rescan plugins in your DAW.
+
+          ## CLAP
+
+          Extract `Borato224-v0.0.3-Ubuntu-CLAP.tar.gz` and copy `Borato 224.clap` to:
+
+          ```text
+          ~/.clap/
+          ```
+
+          Example:
+
+          ```bash
+          mkdir -p ~/.clap
+          tar -xzf Borato224-v0.0.3-Ubuntu-CLAP.tar.gz
+          cp "Borato 224.clap" ~/.clap/
           ```
 
           Then rescan plugins in your DAW.
@@ -259,6 +304,13 @@ jobs:
           path: dist/Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
           if-no-files-found: error
 
+      - name: Upload CLAP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v0.0.3-Ubuntu-CLAP
+          path: dist/Borato224-v0.0.3-Ubuntu-CLAP.tar.gz
+          if-no-files-found: error
+
       - name: Upload install notes
         uses: actions/upload-artifact@v4
         with:
@@ -280,5 +332,6 @@ jobs:
           draft: true
           files: |
             dist/Borato224-v0.0.3-Ubuntu-VST3.tar.gz
+            dist/Borato224-v0.0.3-Ubuntu-CLAP.tar.gz
             dist/Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
             dist/INSTALL-Ubuntu.md

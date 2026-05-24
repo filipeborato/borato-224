@@ -8,7 +8,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(BORATO224_FETCH_JUCE "Download JUCE if it is not found locally" OFF)
 option(BORATO224_COPY_PLUGIN_AFTER_BUILD "Copy the built plugin to the system plugin folder after build" OFF)
+option(BORATO224_BUILD_CLAP "Build the CLAP plugin through clap-juce-extensions" ON)
+option(BORATO224_CLAP_FROM_JUCER "Build only a CLAP wrapper from the Projucer-generated Shared Code library" OFF)
 set(BORATO224_JUCE_SOURCE_DIR "" CACHE PATH "Path to a JUCE source checkout")
+set(BORATO224_JUCER_CONFIGURATION "Release" CACHE STRING "Projucer Shared Code configuration to link when BORATO224_CLAP_FROM_JUCER is enabled")
+set(BORATO224_JUCER_SHARED_CODE_LIB "" CACHE FILEPATH "Path to the Projucer-generated Shared Code library")
 
 if(NOT BORATO224_JUCE_SOURCE_DIR AND EXISTS "C:/JUCE/CMakeLists.txt")
     set(BORATO224_JUCE_SOURCE_DIR "C:/JUCE")
@@ -33,6 +37,75 @@ else()
         )
         FetchContent_MakeAvailable(juce)
     endif()
+endif()
+
+if(BORATO224_BUILD_CLAP OR BORATO224_CLAP_FROM_JUCER)
+    set(BORATO224_CLAP_EXTENSIONS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs/clap-juce-extensions")
+    if(EXISTS "${BORATO224_CLAP_EXTENSIONS_DIR}/CMakeLists.txt")
+        add_subdirectory("${BORATO224_CLAP_EXTENSIONS_DIR}" "${CMAKE_BINARY_DIR}/clap-juce-extensions" EXCLUDE_FROM_ALL)
+    else()
+        message(FATAL_ERROR "clap-juce-extensions not found. Run: git submodule update --init --recursive")
+    endif()
+endif()
+
+if(BORATO224_CLAP_FROM_JUCER)
+    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/JuceLibraryCode/JuceHeader.h")
+        message(FATAL_ERROR "JuceLibraryCode was not found. Open Borato224.jucer in Projucer, check the JUCE module paths, and save the project first.")
+    endif()
+
+    if(NOT BORATO224_JUCER_SHARED_CODE_LIB)
+        if(WIN32)
+            set(BORATO224_JUCER_SHARED_CODE_LIB
+                "${CMAKE_CURRENT_SOURCE_DIR}/Builds/VisualStudio2026/x64/${BORATO224_JUCER_CONFIGURATION}/Shared Code/Borato224.lib")
+        elseif(APPLE)
+            set(BORATO224_JUCER_SHARED_CODE_LIB
+                "${CMAKE_CURRENT_SOURCE_DIR}/Builds/MacOSX/build/${BORATO224_JUCER_CONFIGURATION}/libBorato224.a")
+        else()
+            set(BORATO224_JUCER_SHARED_CODE_LIB
+                "${CMAKE_CURRENT_SOURCE_DIR}/Builds/LinuxMakefile/build/libBorato224.a")
+        endif()
+    endif()
+
+    if(NOT EXISTS "${BORATO224_JUCER_SHARED_CODE_LIB}")
+        message(FATAL_ERROR "Projucer Shared Code library not found: ${BORATO224_JUCER_SHARED_CODE_LIB}. Build the Projucer Shared Code target first, or set BORATO224_JUCER_SHARED_CODE_LIB explicitly.")
+    endif()
+
+    clap_juce_extensions_plugin_jucer(
+        TARGET Borato224Projucer
+        TARGET_PATH "${BORATO224_JUCER_SHARED_CODE_LIB}"
+        PLUGIN_BINARY_NAME "Borato 224"
+        PLUGIN_VERSION "${PROJECT_VERSION}"
+        CLAP_ID "com.boratoaudio.borato224"
+        CLAP_FEATURES audio-effect reverb stereo)
+
+    target_include_directories(Borato224Projucer_CLAP
+        PUBLIC
+            "${BORATO224_JUCE_SOURCE_DIR}/modules"
+            "${CMAKE_CURRENT_SOURCE_DIR}/JuceLibraryCode")
+
+    target_compile_definitions(Borato224Projucer_CLAP
+        PRIVATE
+            JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1
+            JUCE_WEB_BROWSER=0
+            JUCE_USE_CURL=0
+            JucePlugin_Name="Borato 224"
+            JucePlugin_Manufacturer="Borato Audio"
+            JucePlugin_ManufacturerWebsite="https://boratoaudio.com"
+            JucePlugin_VersionString="${PROJECT_VERSION}"
+            JucePlugin_Desc=""
+            JucePlugin_IsSynth=0
+            JucePlugin_ProducesMidiOutput=0
+            JucePlugin_WantsMidiInput=0
+            JucePlugin_ManufacturerCode=Bora
+            JucePlugin_PluginCode="B224"
+            JucePlugin_VSTUniqueID="B224"
+            JucePlugin_EditorRequiresKeyboardFocus=0)
+
+    if(MSVC)
+        target_compile_options(Borato224Projucer_CLAP PRIVATE /W4 /permissive- /wd4244 /wd4267)
+    endif()
+
+    return()
 endif()
 
 # JUCE 8's Windows resource helper may be emitted as the literal command
@@ -124,4 +197,10 @@ if(MSVC)
     target_compile_options(Borato224 PRIVATE /W4 /permissive- /wd4244 /wd4267)
 else()
     target_compile_options(Borato224 PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+if(BORATO224_BUILD_CLAP)
+    clap_juce_extensions_plugin(TARGET Borato224
+        CLAP_ID "com.boratoaudio.borato224"
+        CLAP_FEATURES audio-effect reverb stereo)
 endif()
