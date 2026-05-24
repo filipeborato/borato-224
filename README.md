@@ -12,6 +12,8 @@ Borato 224 is a vintage digital reverb plugin inspired by the workflow and hardw
 - A local JUCE checkout. The default expected path on Windows is `C:\JUCE`.
 - A C++20 compiler.
 - VST3 support through JUCE.
+- LV2 support through the Projucer Linux Makefile exporter.
+- CLAP support through the `libs/clap-juce-extensions` submodule.
 
 Recommended toolchains:
 
@@ -226,6 +228,7 @@ macOS artifacts:
 
 ```text
 Borato224-v0.0.3-macOS-VST3.zip
+Borato224-v0.0.3-macOS-CLAP.zip
 Borato224-v0.0.3-macOS-AU.zip
 Borato224-v0.0.3-macOS-Standalone.zip
 Borato224-v0.0.3-macOS-install-notes
@@ -235,6 +238,7 @@ Ubuntu artifacts:
 
 ```text
 Borato224-v0.0.3-Ubuntu-VST3.tar.gz
+Borato224-v0.0.3-Ubuntu-CLAP.tar.gz
 Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
 Borato224-v0.0.3-Ubuntu-install-notes
 ```
@@ -260,10 +264,12 @@ The workflow will build Release artifacts and create/update a draft GitHub Relea
 
 ```text
 Borato224-v0.0.3-macOS-VST3.zip
+Borato224-v0.0.3-macOS-CLAP.zip
 Borato224-v0.0.3-macOS-AU.zip
 Borato224-v0.0.3-macOS-Standalone.zip
 INSTALL-macOS.md
 Borato224-v0.0.3-Ubuntu-VST3.tar.gz
+Borato224-v0.0.3-Ubuntu-CLAP.tar.gz
 Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
 INSTALL-Ubuntu.md
 ```
@@ -274,6 +280,7 @@ Unzip the artifacts and install:
 
 ```text
 Borato 224.vst3       -> ~/Library/Audio/Plug-Ins/VST3/
+Borato 224.clap       -> ~/Library/Audio/Plug-Ins/CLAP/
 Borato 224.component  -> ~/Library/Audio/Plug-Ins/Components/
 Borato 224.app        -> /Applications or any local folder
 ```
@@ -282,6 +289,7 @@ The current CI builds are unsigned and not notarized. If macOS blocks them after
 
 ```bash
 xattr -dr com.apple.quarantine "Borato 224.vst3"
+xattr -dr com.apple.quarantine "Borato 224.clap"
 xattr -dr com.apple.quarantine "Borato 224.component"
 xattr -dr com.apple.quarantine "Borato 224.app"
 ```
@@ -305,6 +313,24 @@ Then open your DAW and rescan plugins. Common Linux VST3 scan paths include:
 ```
 
 The per-user path `~/.vst3/` is recommended for testing because it does not require administrator permissions.
+
+Extract the CLAP archive and install it to your user CLAP folder:
+
+```bash
+mkdir -p ~/.clap
+tar -xzf Borato224-v0.0.3-Ubuntu-CLAP.tar.gz
+cp "Borato 224.clap" ~/.clap/
+```
+
+Then rescan plugins in your DAW. Common Linux CLAP scan paths include:
+
+```text
+~/.clap/
+/usr/local/lib/clap/
+/usr/lib/clap/
+```
+
+The per-user path `~/.clap/` is recommended for testing because it does not require administrator permissions.
 
 To run the standalone Ubuntu build:
 
@@ -332,6 +358,69 @@ Builds/VisualStudio2026/
 ```
 
 On macOS or Linux, add the matching exporter in Projucer before saving.
+
+Projucer builds the regular JUCE formats listed in the project, such as VST3, LV2 on Linux, AU on macOS, and Standalone. CLAP is not a native Projucer exporter, but this repository includes a CMake wrapper that can link against the Projucer-generated `Shared Code` library and produce a `.clap` from that build.
+
+For Ubuntu/LV2 testing, open `Borato224.jucer` on Linux, confirm the JUCE module paths for that machine, save the project, then build the generated Linux Makefile project under:
+
+```text
+Builds/LinuxMakefile/
+```
+
+Windows example using the Visual Studio 2026 Projucer exporter:
+
+```powershell
+git submodule update --init --recursive
+
+# 1. Open Borato224.jucer in Projucer, confirm the module paths, save it, then
+#    build the "Borato224 - Shared Code" target in Visual Studio.
+
+# 2. Build only the CLAP wrapper from that Projucer Shared Code library.
+cmake -S . -B build-projucer-clap -G "Visual Studio 18 2026" -A x64 `
+  -DBORATO224_JUCE_SOURCE_DIR=C:\JUCE `
+  -DBORATO224_CLAP_FROM_JUCER=ON `
+  -DBORATO224_JUCER_CONFIGURATION=Debug
+
+cmake --build build-projucer-clap --config Debug --target Borato224Projucer_CLAP
+```
+
+The expected Windows CLAP output is:
+
+```text
+build-projucer-clap/Borato224Projucer_artefacts/Debug/Borato 224.clap
+```
+
+For Release, build the Projucer `Shared Code` target as Release first, then use:
+
+```powershell
+cmake -S . -B build-projucer-clap-release -G "Visual Studio 18 2026" -A x64 `
+  -DBORATO224_JUCE_SOURCE_DIR=C:\JUCE `
+  -DBORATO224_CLAP_FROM_JUCER=ON `
+  -DBORATO224_JUCER_CONFIGURATION=Release
+
+cmake --build build-projucer-clap-release --config Release --target Borato224Projucer_CLAP
+```
+
+If your Projucer exporter or configuration writes the `Shared Code` library somewhere else, pass it explicitly:
+
+```powershell
+cmake -S . -B build-projucer-clap -G "Visual Studio 18 2026" -A x64 `
+  -DBORATO224_JUCE_SOURCE_DIR=C:\JUCE `
+  -DBORATO224_CLAP_FROM_JUCER=ON `
+  -DBORATO224_JUCER_SHARED_CODE_LIB="C:\full\path\to\Borato224.lib"
+```
+
+### CLAP Build Notes
+
+The primary CMake build can also produce CLAP directly from the CMake JUCE target:
+
+```bash
+git submodule update --init --recursive
+cmake -S . -B build -DBORATO224_BUILD_CLAP=ON -DBORATO224_JUCE_SOURCE_DIR=/path/to/JUCE
+cmake --build build --config Release --target Borato224_CLAP
+```
+
+Use `Borato224_CLAP` for the regular CMake build and `Borato224Projucer_CLAP` when you want to test against the `.jucer`/Projucer-generated `Shared Code` build.
 
 ## Working on the Project
 
