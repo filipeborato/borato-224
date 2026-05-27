@@ -267,16 +267,21 @@ The repository includes a release artifact workflow:
 .github/workflows/build-macos-release.yml
 ```
 
-It builds Release artifacts on `macos-latest` and `ubuntu-latest`, downloading JUCE through CMake with `BORATO224_FETCH_JUCE=ON`.
+It builds Release artifacts on `macos-15` (Apple Silicon), `macos-15-intel`, and `ubuntu-latest`, downloading JUCE through CMake with `BORATO224_FETCH_JUCE=ON`.
 
 macOS artifacts:
 
 ```text
-Borato224-v0.0.3-macOS-VST3.zip
-Borato224-v0.0.3-macOS-CLAP.zip
-Borato224-v0.0.3-macOS-AU.zip
-Borato224-v0.0.3-macOS-Standalone.zip
-Borato224-v0.0.3-macOS-install-notes
+Borato224-v0.0.3-macOS-arm64-VST3.zip
+Borato224-v0.0.3-macOS-arm64-CLAP.zip
+Borato224-v0.0.3-macOS-arm64-AU.zip
+Borato224-v0.0.3-macOS-arm64-Standalone.zip
+Borato224-v0.0.3-macOS-arm64-install-notes
+Borato224-v0.0.3-macOS-intel-VST3.zip
+Borato224-v0.0.3-macOS-intel-CLAP.zip
+Borato224-v0.0.3-macOS-intel-AU.zip
+Borato224-v0.0.3-macOS-intel-Standalone.zip
+Borato224-v0.0.3-macOS-intel-install-notes
 ```
 
 Ubuntu artifacts:
@@ -295,7 +300,7 @@ To download the files:
 1. Open the repository on GitHub.
 2. Go to `Actions`.
 3. Open the latest `Build Release Artifacts` run.
-4. Download `Borato224-v0.0.3-macOS-release-assets` and/or `Borato224-v0.0.3-Ubuntu-release-assets` from the run summary.
+4. Download `Borato224-v0.0.3-macOS-arm64-release-assets`, `Borato224-v0.0.3-macOS-intel-release-assets`, and/or `Borato224-v0.0.3-Ubuntu-release-assets` from the run summary.
 5. Extract the downloaded artifact bundle and attach the contained archives to the GitHub release.
 
 To create release assets automatically, push a version tag:
@@ -308,11 +313,16 @@ git push origin v0.0.3
 The workflow will build Release artifacts and create/update a draft GitHub Release for that tag with:
 
 ```text
-Borato224-v0.0.3-macOS-VST3.zip
-Borato224-v0.0.3-macOS-CLAP.zip
-Borato224-v0.0.3-macOS-AU.zip
-Borato224-v0.0.3-macOS-Standalone.zip
-INSTALL-macOS.md
+Borato224-v0.0.3-macOS-arm64-VST3.zip
+Borato224-v0.0.3-macOS-arm64-CLAP.zip
+Borato224-v0.0.3-macOS-arm64-AU.zip
+Borato224-v0.0.3-macOS-arm64-Standalone.zip
+INSTALL-macOS-arm64.md
+Borato224-v0.0.3-macOS-intel-VST3.zip
+Borato224-v0.0.3-macOS-intel-CLAP.zip
+Borato224-v0.0.3-macOS-intel-AU.zip
+Borato224-v0.0.3-macOS-intel-Standalone.zip
+INSTALL-macOS-intel.md
 Borato224-v0.0.3-Ubuntu-VST3.tar.gz
 Borato224-v0.0.3-Ubuntu-CLAP.tar.gz
 Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
