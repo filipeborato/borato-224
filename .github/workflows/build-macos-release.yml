@@ -21,8 +21,22 @@ permissions:
 
 jobs:
   build-macos:
-    name: macOS Release
-    runs-on: macos-latest
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runs_on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS arm64 Release
+            runs_on: macos-15
+            architecture: arm64
+            artifact_suffix: macOS-arm64
+            install_notes: INSTALL-macOS-arm64.md
+          - name: macOS Intel Release
+            runs_on: macos-15-intel
+            architecture: x86_64
+            artifact_suffix: macOS-intel
+            install_notes: INSTALL-macOS-intel.md
 
     steps:
       - name: Checkout
@@ -39,6 +53,7 @@ jobs:
           -G Xcode
           -DBORATO224_FETCH_JUCE=ON
           -DBORATO224_COPY_PLUGIN_AFTER_BUILD=OFF
+          -DCMAKE_OSX_ARCHITECTURES=${{ matrix.architecture }}
           -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO
           -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=NO
           -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY=""
@@ -53,6 +68,9 @@ jobs:
 
           artifact_root="build/Borato224_artefacts/Release"
           dist="dist"
+          artifact_suffix="${{ matrix.artifact_suffix }}"
+          install_notes="${{ matrix.install_notes }}"
+          architecture="${{ matrix.architecture }}"
           mkdir -p "$dist"
 
           vst3="$artifact_root/VST3/Borato 224.vst3"
@@ -65,19 +83,19 @@ jobs:
           test -d "$au"
           test -d "$standalone"
 
-          ditto -c -k --keepParent "$vst3" "$dist/Borato224-v${BORATO224_VERSION}-macOS-VST3.zip"
-          ditto -c -k --keepParent "$clap" "$dist/Borato224-v${BORATO224_VERSION}-macOS-CLAP.zip"
-          ditto -c -k --keepParent "$au" "$dist/Borato224-v${BORATO224_VERSION}-macOS-AU.zip"
-          ditto -c -k --keepParent "$standalone" "$dist/Borato224-v${BORATO224_VERSION}-macOS-Standalone.zip"
+          ditto -c -k --keepParent "$vst3" "$dist/Borato224-v${BORATO224_VERSION}-${artifact_suffix}-VST3.zip"
+          ditto -c -k --keepParent "$clap" "$dist/Borato224-v${BORATO224_VERSION}-${artifact_suffix}-CLAP.zip"
+          ditto -c -k --keepParent "$au" "$dist/Borato224-v${BORATO224_VERSION}-${artifact_suffix}-AU.zip"
+          ditto -c -k --keepParent "$standalone" "$dist/Borato224-v${BORATO224_VERSION}-${artifact_suffix}-Standalone.zip"
 
-          cat > "$dist/INSTALL-macOS.md" <<'EOF'
-          # Borato 224 macOS install
+          cat > "$dist/$install_notes" <<EOF
+          # Borato 224 macOS install (${architecture})
 
           These artifacts are unsigned development builds.
 
           ## VST3
 
-          Unzip `Borato224-v0.0.3-macOS-VST3.zip` and copy `Borato 224.vst3` to:
+          Unzip `Borato224-v${BORATO224_VERSION}-${artifact_suffix}-VST3.zip` and copy `Borato 224.vst3` to:
 
           ```text
           ~/Library/Audio/Plug-Ins/VST3/
@@ -85,7 +103,7 @@ jobs:
 
           ## AU
 
-          Unzip `Borato224-v0.0.3-macOS-AU.zip` and copy `Borato 224.component` to:
+          Unzip `Borato224-v${BORATO224_VERSION}-${artifact_suffix}-AU.zip` and copy `Borato 224.component` to:
 
           ```text
           ~/Library/Audio/Plug-Ins/Components/
@@ -93,7 +111,7 @@ jobs:
 
           ## CLAP
 
-          Unzip `Borato224-v0.0.3-macOS-CLAP.zip` and copy `Borato 224.clap` to:
+          Unzip `Borato224-v${BORATO224_VERSION}-${artifact_suffix}-CLAP.zip` and copy `Borato 224.clap` to:
 
           ```text
           ~/Library/Audio/Plug-Ins/CLAP/
@@ -101,7 +119,7 @@ jobs:
 
           ## Standalone
 
-          Unzip `Borato224-v0.0.3-macOS-Standalone.zip` and move `Borato 224.app` to `/Applications` or any local folder.
+          Unzip `Borato224-v${BORATO224_VERSION}-${artifact_suffix}-Standalone.zip` and move `Borato 224.app` to `/Applications` or any local folder.
 
           ## Gatekeeper note
 
@@ -120,42 +138,42 @@ jobs:
       - name: Upload VST3
         uses: actions/upload-artifact@v4
         with:
-          name: Borato224-v0.0.3-macOS-VST3
-          path: dist/Borato224-v0.0.3-macOS-VST3.zip
+          name: Borato224-v0.0.3-${{ matrix.artifact_suffix }}-VST3
+          path: dist/Borato224-v0.0.3-${{ matrix.artifact_suffix }}-VST3.zip
           if-no-files-found: error
 
       - name: Upload AU
         uses: actions/upload-artifact@v4
         with:
-          name: Borato224-v0.0.3-macOS-AU
-          path: dist/Borato224-v0.0.3-macOS-AU.zip
+          name: Borato224-v0.0.3-${{ matrix.artifact_suffix }}-AU
+          path: dist/Borato224-v0.0.3-${{ matrix.artifact_suffix }}-AU.zip
           if-no-files-found: error
 
       - name: Upload CLAP
         uses: actions/upload-artifact@v4
         with:
-          name: Borato224-v0.0.3-macOS-CLAP
-          path: dist/Borato224-v0.0.3-macOS-CLAP.zip
+          name: Borato224-v0.0.3-${{ matrix.artifact_suffix }}-CLAP
+          path: dist/Borato224-v0.0.3-${{ matrix.artifact_suffix }}-CLAP.zip
           if-no-files-found: error
 
       - name: Upload Standalone
         uses: actions/upload-artifact@v4
         with:
-          name: Borato224-v0.0.3-macOS-Standalone
-          path: dist/Borato224-v0.0.3-macOS-Standalone.zip
+          name: Borato224-v0.0.3-${{ matrix.artifact_suffix }}-Standalone
+          path: dist/Borato224-v0.0.3-${{ matrix.artifact_suffix }}-Standalone.zip
           if-no-files-found: error
 
       - name: Upload install notes
         uses: actions/upload-artifact@v4
         with:
-          name: Borato224-v0.0.3-macOS-install-notes
-          path: dist/INSTALL-macOS.md
+          name: Borato224-v0.0.3-${{ matrix.artifact_suffix }}-install-notes
+          path: dist/${{ matrix.install_notes }}
           if-no-files-found: error
 
       - name: Upload release bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Borato224-v0.0.3-macOS-release-assets
+          name: Borato224-v0.0.3-${{ matrix.artifact_suffix }}-release-assets
           path: dist/*
           if-no-files-found: error
 
@@ -165,11 +183,11 @@ jobs:
         with:
           draft: true
           files: |
-            dist/Borato224-v0.0.3-macOS-VST3.zip
-            dist/Borato224-v0.0.3-macOS-CLAP.zip
-            dist/Borato224-v0.0.3-macOS-AU.zip
-            dist/Borato224-v0.0.3-macOS-Standalone.zip
-            dist/INSTALL-macOS.md
+            dist/Borato224-v0.0.3-${{ matrix.artifact_suffix }}-VST3.zip
+            dist/Borato224-v0.0.3-${{ matrix.artifact_suffix }}-CLAP.zip
+            dist/Borato224-v0.0.3-${{ matrix.artifact_suffix }}-AU.zip
+            dist/Borato224-v0.0.3-${{ matrix.artifact_suffix }}-Standalone.zip
+            dist/${{ matrix.install_notes }}
 
   build-ubuntu:
     name: Ubuntu Release
