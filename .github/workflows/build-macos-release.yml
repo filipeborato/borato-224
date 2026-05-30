@@ -23,28 +23,30 @@ permissions:
 
 jobs:
   build-macos:
-    name: macOS Release (${{ matrix.arch }})
-    runs-on: ${{ matrix.runner }}
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runs_on }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Apple Silicon: arm64 code only ever ran on macOS 11.0+ (no Apple
-          # Silicon Mac shipped before Big Sur), so 10.15 is not a valid minimum
-          # for an arm64 slice. We therefore justify 11.0 for this leg.
-          # We run on an arm64 runner so auval can load the arm64 component
-          # natively.
-          - arch: arm64
-            runner: macos-14
+          # Apple Silicon: validated on an arm64 runner so auval can load the
+          # arm64 component natively. arm64 code only ever ran on macOS 11.0+
+          # (no Apple Silicon Mac shipped before Big Sur), so 10.15 is not a
+          # valid minimum for an arm64 slice — we justify 11.0 here.
+          - name: macOS arm64 Release
+            runs_on: macos-15
+            architecture: arm64
+            artifact_suffix: macOS-arm64
+            install_notes: INSTALL-macOS-arm64.md
             deployment_target: "11.0"
-          # Intel: built and validated on an Intel runner so auval can load the
-          # x86_64 component natively. 10.15 (Catalina) is a safe minimum here.
-          - arch: x86_64
-            runner: macos-13
+          # Intel: validated on an Intel runner so auval can load the x86_64
+          # component natively. 10.15 (Catalina) is a safe minimum here.
+          - name: macOS Intel Release
+            runs_on: macos-15-intel
+            architecture: x86_64
+            artifact_suffix: macOS-intel
+            install_notes: INSTALL-macOS-intel.md
             deployment_target: "10.15"
-
-    env:
-      ARCH_SUFFIX: ${{ matrix.arch }}
 
     steps:
       - name: Checkout
@@ -70,7 +72,7 @@ jobs:
           -G Xcode
           -DBORATO224_FETCH_JUCE=ON
           -DBORATO224_COPY_PLUGIN_AFTER_BUILD=OFF
-          -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }}
+          -DCMAKE_OSX_ARCHITECTURES=${{ matrix.architecture }}
           -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.deployment_target }}
           -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO
           -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=NO
@@ -124,6 +126,9 @@ jobs:
 
           artifact_root="build/Borato224_artefacts/Release"
           dist="dist"
+          artifact_suffix="${{ matrix.artifact_suffix }}"
+          install_notes="${{ matrix.install_notes }}"
+          architecture="${{ matrix.architecture }}"
           mkdir -p "$dist"
 
           vst3="$artifact_root/VST3/Borato 224.vst3"
@@ -136,7 +141,7 @@ jobs:
           test -d "$au"
           test -d "$standalone"
 
-          base="Borato224-v${BORATO224_VERSION}-macOS-${ARCH_SUFFIX}"
+          base="Borato224-v${BORATO224_VERSION}-${artifact_suffix}"
 
           # NOTE: the AU is zipped from the same on-disk bundle that was signed
           # and validated in the previous step.
@@ -145,7 +150,7 @@ jobs:
           ditto -c -k --keepParent "$au" "$dist/${base}-AU.zip"
           ditto -c -k --keepParent "$standalone" "$dist/${base}-Standalone.zip"
 
-          cat > "$dist/INSTALL-macOS-${ARCH_SUFFIX}.md" <<'EOF'
+          cat > "$dist/$install_notes" <<'EOF'
           # Borato 224 macOS install (@ARCH@)
 
           The Audio Unit in this bundle is ad-hoc signed and was validated in CI
@@ -154,7 +159,7 @@ jobs:
 
           ## VST3
 
-          Unzip `Borato224-v@VER@-macOS-@ARCH@-VST3.zip` and copy `Borato 224.vst3` to:
+          Unzip `Borato224-v@VER@-@SUFFIX@-VST3.zip` and copy `Borato 224.vst3` to:
 
           ```text
           ~/Library/Audio/Plug-Ins/VST3/
@@ -162,7 +167,7 @@ jobs:
 
           ## AU
 
-          Unzip `Borato224-v@VER@-macOS-@ARCH@-AU.zip` and copy `Borato 224.component` to:
+          Unzip `Borato224-v@VER@-@SUFFIX@-AU.zip` and copy `Borato 224.component` to:
 
           ```text
           ~/Library/Audio/Plug-Ins/Components/
@@ -176,7 +181,7 @@ jobs:
 
           ## CLAP
 
-          Unzip `Borato224-v@VER@-macOS-@ARCH@-CLAP.zip` and copy `Borato 224.clap` to:
+          Unzip `Borato224-v@VER@-@SUFFIX@-CLAP.zip` and copy `Borato 224.clap` to:
 
           ```text
           ~/Library/Audio/Plug-Ins/CLAP/
@@ -184,7 +189,7 @@ jobs:
 
           ## Standalone
 
-          Unzip `Borato224-v@VER@-macOS-@ARCH@-Standalone.zip` and move `Borato 224.app` to `/Applications` or any local folder.
+          Unzip `Borato224-v@VER@-@SUFFIX@-Standalone.zip` and move `Borato 224.app` to `/Applications` or any local folder.
 
           ## Gatekeeper note
 
@@ -198,54 +203,55 @@ jobs:
           ```
           EOF
 
-          # Fill in version/arch placeholders (kept out of the quoted heredoc so
-          # the markdown code fences survive verbatim).
+          # Fill in placeholders (kept out of the quoted heredoc so the markdown
+          # code fences survive verbatim).
           sed -i '' \
             -e "s/@VER@/${BORATO224_VERSION}/g" \
-            -e "s/@ARCH@/${ARCH_SUFFIX}/g" \
-            "$dist/INSTALL-macOS-${ARCH_SUFFIX}.md"
+            -e "s/@SUFFIX@/${artifact_suffix}/g" \
+            -e "s/@ARCH@/${architecture}/g" \
+            "$dist/$install_notes"
 
           ls -la "$dist"
 
       - name: Upload VST3
         uses: actions/upload-artifact@v4
         with:
-          name: Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-VST3
-          path: dist/Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-VST3.zip
+          name: Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-VST3
+          path: dist/Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-VST3.zip
           if-no-files-found: error
 
       - name: Upload AU
         uses: actions/upload-artifact@v4
         with:
-          name: Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-AU
-          path: dist/Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-AU.zip
+          name: Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-AU
+          path: dist/Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-AU.zip
           if-no-files-found: error
 
       - name: Upload CLAP
         uses: actions/upload-artifact@v4
         with:
-          name: Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-CLAP
-          path: dist/Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-CLAP.zip
+          name: Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-CLAP
+          path: dist/Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-CLAP.zip
           if-no-files-found: error
 
       - name: Upload Standalone
         uses: actions/upload-artifact@v4
         with:
-          name: Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-Standalone
-          path: dist/Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-Standalone.zip
+          name: Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-Standalone
+          path: dist/Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-Standalone.zip
           if-no-files-found: error
 
       - name: Upload install notes
         uses: actions/upload-artifact@v4
         with:
-          name: Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-install-notes
-          path: dist/INSTALL-macOS-${{ matrix.arch }}.md
+          name: Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-install-notes
+          path: dist/${{ matrix.install_notes }}
           if-no-files-found: error
 
       - name: Upload release bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-release-assets
+          name: Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-release-assets
           path: dist/*
           if-no-files-found: error
 
@@ -255,11 +261,11 @@ jobs:
         with:
           draft: true
           files: |
-            dist/Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-VST3.zip
-            dist/Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-CLAP.zip
-            dist/Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-AU.zip
-            dist/Borato224-v${{ env.BORATO224_VERSION }}-macOS-${{ matrix.arch }}-Standalone.zip
-            dist/INSTALL-macOS-${{ matrix.arch }}.md
+            dist/Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-VST3.zip
+            dist/Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-CLAP.zip
+            dist/Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-AU.zip
+            dist/Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-Standalone.zip
+            dist/${{ matrix.install_notes }}
 
   build-ubuntu:
     name: Ubuntu Release

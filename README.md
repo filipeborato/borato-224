@@ -214,6 +214,51 @@ cmake --build build-release
 
 Linux builds normally produce `VST3` and `Standalone`. AU is a macOS-only format.
 
+## Installing the Plugin
+
+After building (or downloading CI artifacts), copy the plugin(s) into a folder your DAW scans, then rescan plugins.
+
+### Windows
+
+Common scan/install locations:
+
+```text
+VST3 (per-user)   %LOCALAPPDATA%\Programs\Common\VST3\
+VST3 (system)     C:\Program Files\Common Files\VST3\
+CLAP (per-user)   %LOCALAPPDATA%\Programs\Common\CLAP\
+CLAP (system)     C:\Program Files\Common Files\CLAP\
+```
+
+### macOS
+
+Common scan/install locations:
+
+```text
+VST3              ~/Library/Audio/Plug-Ins/VST3/
+CLAP              ~/Library/Audio/Plug-Ins/CLAP/
+AU (.component)   ~/Library/Audio/Plug-Ins/Components/
+Standalone (.app) /Applications or any local folder
+```
+
+CI builds are currently unsigned and not notarized. If macOS blocks them after download, remove quarantine:
+
+```bash
+xattr -dr com.apple.quarantine "Borato 224.vst3"
+xattr -dr com.apple.quarantine "Borato 224.clap"
+xattr -dr com.apple.quarantine "Borato 224.component"
+xattr -dr com.apple.quarantine "Borato 224.app"
+```
+
+### Linux
+
+Common scan/install locations:
+
+```text
+VST3              ~/.vst3/                  (or /usr/local/lib/vst3/, /usr/lib/vst3/)
+CLAP              ~/.clap/                  (or /usr/local/lib/clap/, /usr/lib/clap/)
+LV2               ~/.lv2/                   (or /usr/local/lib/lv2/, /usr/lib/lv2/)
+```
+
 ### GitHub Actions Release Artifacts
 
 The repository includes a release artifact workflow:
@@ -222,16 +267,21 @@ The repository includes a release artifact workflow:
 .github/workflows/build-macos-release.yml
 ```
 
-It builds Release artifacts on `macos-latest` and `ubuntu-latest`, downloading JUCE through CMake with `BORATO224_FETCH_JUCE=ON`.
+It builds Release artifacts on `macos-15` (Apple Silicon), `macos-15-intel`, and `ubuntu-latest`, downloading JUCE through CMake with `BORATO224_FETCH_JUCE=ON`.
 
 macOS artifacts:
 
 ```text
-Borato224-v0.0.3-macOS-VST3.zip
-Borato224-v0.0.3-macOS-CLAP.zip
-Borato224-v0.0.3-macOS-AU.zip
-Borato224-v0.0.3-macOS-Standalone.zip
-Borato224-v0.0.3-macOS-install-notes
+Borato224-v0.0.3-macOS-arm64-VST3.zip
+Borato224-v0.0.3-macOS-arm64-CLAP.zip
+Borato224-v0.0.3-macOS-arm64-AU.zip
+Borato224-v0.0.3-macOS-arm64-Standalone.zip
+Borato224-v0.0.3-macOS-arm64-install-notes
+Borato224-v0.0.3-macOS-intel-VST3.zip
+Borato224-v0.0.3-macOS-intel-CLAP.zip
+Borato224-v0.0.3-macOS-intel-AU.zip
+Borato224-v0.0.3-macOS-intel-Standalone.zip
+Borato224-v0.0.3-macOS-intel-install-notes
 ```
 
 Ubuntu artifacts:
@@ -250,7 +300,7 @@ To download the files:
 1. Open the repository on GitHub.
 2. Go to `Actions`.
 3. Open the latest `Build Release Artifacts` run.
-4. Download `Borato224-v0.0.3-macOS-release-assets` and/or `Borato224-v0.0.3-Ubuntu-release-assets` from the run summary.
+4. Download `Borato224-v0.0.3-macOS-arm64-release-assets`, `Borato224-v0.0.3-macOS-intel-release-assets`, and/or `Borato224-v0.0.3-Ubuntu-release-assets` from the run summary.
 5. Extract the downloaded artifact bundle and attach the contained archives to the GitHub release.
 
 To create release assets automatically, push a version tag:
@@ -263,84 +313,23 @@ git push origin v0.0.3
 The workflow will build Release artifacts and create/update a draft GitHub Release for that tag with:
 
 ```text
-Borato224-v0.0.3-macOS-VST3.zip
-Borato224-v0.0.3-macOS-CLAP.zip
-Borato224-v0.0.3-macOS-AU.zip
-Borato224-v0.0.3-macOS-Standalone.zip
-INSTALL-macOS.md
+Borato224-v0.0.3-macOS-arm64-VST3.zip
+Borato224-v0.0.3-macOS-arm64-CLAP.zip
+Borato224-v0.0.3-macOS-arm64-AU.zip
+Borato224-v0.0.3-macOS-arm64-Standalone.zip
+INSTALL-macOS-arm64.md
+Borato224-v0.0.3-macOS-intel-VST3.zip
+Borato224-v0.0.3-macOS-intel-CLAP.zip
+Borato224-v0.0.3-macOS-intel-AU.zip
+Borato224-v0.0.3-macOS-intel-Standalone.zip
+INSTALL-macOS-intel.md
 Borato224-v0.0.3-Ubuntu-VST3.tar.gz
 Borato224-v0.0.3-Ubuntu-CLAP.tar.gz
 Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
 INSTALL-Ubuntu.md
 ```
 
-#### Install on macOS
-
-Unzip the artifacts and install:
-
-```text
-Borato 224.vst3       -> ~/Library/Audio/Plug-Ins/VST3/
-Borato 224.clap       -> ~/Library/Audio/Plug-Ins/CLAP/
-Borato 224.component  -> ~/Library/Audio/Plug-Ins/Components/
-Borato 224.app        -> /Applications or any local folder
-```
-
-The current CI builds are unsigned and not notarized. If macOS blocks them after download, remove quarantine after unzipping:
-
-```bash
-xattr -dr com.apple.quarantine "Borato 224.vst3"
-xattr -dr com.apple.quarantine "Borato 224.clap"
-xattr -dr com.apple.quarantine "Borato 224.component"
-xattr -dr com.apple.quarantine "Borato 224.app"
-```
-
-#### Install on Ubuntu
-
-Extract the VST3 archive and install it to your user VST3 folder:
-
-```bash
-mkdir -p ~/.vst3
-tar -xzf Borato224-v0.0.3-Ubuntu-VST3.tar.gz
-cp -R "Borato 224.vst3" ~/.vst3/
-```
-
-Then open your DAW and rescan plugins. Common Linux VST3 scan paths include:
-
-```text
-~/.vst3/
-/usr/local/lib/vst3/
-/usr/lib/vst3/
-```
-
-The per-user path `~/.vst3/` is recommended for testing because it does not require administrator permissions.
-
-Extract the CLAP archive and install it to your user CLAP folder:
-
-```bash
-mkdir -p ~/.clap
-tar -xzf Borato224-v0.0.3-Ubuntu-CLAP.tar.gz
-cp "Borato 224.clap" ~/.clap/
-```
-
-Then rescan plugins in your DAW. Common Linux CLAP scan paths include:
-
-```text
-~/.clap/
-/usr/local/lib/clap/
-/usr/lib/clap/
-```
-
-The per-user path `~/.clap/` is recommended for testing because it does not require administrator permissions.
-
-To run the standalone Ubuntu build:
-
-```bash
-tar -xzf Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
-chmod +x "Borato 224"
-./"Borato 224"
-```
-
-If the standalone app does not start, install the same JUCE runtime dependencies listed in the Linux build section above.
+To install the CI artifacts, copy the extracted plugin(s) into the appropriate folders listed in [Installing the Plugin](#installing-the-plugin), then rescan plugins in your DAW.
 
 ### Projucer Workflow
 
@@ -450,52 +439,10 @@ assets/
 - After DSP changes, test silence, impulses, fast automation, different buffer sizes and different sample rates.
 - After GUI changes, test resize behavior, fader alignment, button states and display readability.
 
-## Plugin Quick Manual
+## Plugin Manual
 
-### Program
+See `MANUAL.md`.
 
-The `PROGRAM` buttons select the base reverb behavior:
+## License
 
-- `HALL`: large musical space with a dense tail.
-- `ROOM`: smaller room with shorter decay and stronger early reflections.
-- `PLATE`: brighter, smoother plate-style tail.
-- `CHMBR`: chamber behavior between room and hall.
-- `AMBI`: short ambience for space without an obvious long tail.
-- `SPACE`: large, expansive and diffuse reverb.
-- `RANDOM`: generates a new preset variation and adds a less static modulation character.
-- `USER`: neutral slot for manual settings.
-
-### System
-
-- `STORE`: saves the current state as an internal snapshot.
-- `RECALL`: restores the saved snapshot.
-- `A/B`: switches between two working states.
-- `COMPARE`: compares the edited state against the stored state.
-- `EDIT`: shows the selected parameter on the LED display.
-- `BYPASS`: turns the effect on/off with a short fade to avoid clicks.
-- `VALUE -`: decreases the selected parameter.
-- `VALUE +`: increases the selected parameter.
-
-### Faders
-
-- `DECAY`: reverb time.
-- `BASS`: low-frequency weight in the tail.
-- `MID`: midrange tone control.
-- `CROSSOVER`: split point between low and high behavior in the reverb tank.
-- `TREBLE DECAY`: brightness and high-frequency decay.
-- `DEPTH`: modulation depth.
-- `PRE-DELAY`: delay before the reverb starts.
-- `MIX`: dry/wet balance.
-
-### Display
-
-The LED display is contextual:
-
-- In normal mode it shows the active program.
-- When a fader is moved or `EDIT` is active, it shows parameter name, value and unit.
-- Unit LEDs indicate `sec`, `ms`, `Hz` or `dB`.
-- Status LEDs indicate `Program`, `Edit` and `Store`.
-
-### Starting Point
-
-Start with `HALL`, `PLATE` or `SPACE`, adjust `DECAY` and `PRE-DELAY`, then set `MIX` last. Use `CROSSOVER` together with `BASS` and `TREBLE DECAY` to make the tail darker, fuller or more open.
+MIT. See `LICENSE`.
