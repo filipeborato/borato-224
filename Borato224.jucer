@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="B224" name="Borato224" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" companyName="Borato Audio"
-              companyWebsite="borato.audio" version="0.0.3" cppLanguageStandard="20"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" companyName="Borato Company"
+              companyWebsite="borato.audio" version="0.0.5" cppLanguageStandard="20"
               bundleIdentifier="com.boratoaudio.borato224" pluginName="Borato 224"
-              pluginDesc="Borato 224" pluginManufacturer="Borato Audio" pluginManufacturerCode="Bora"
+              pluginDesc="Borato 224" pluginManufacturer="Borato Company" pluginManufacturerCode="Bora"
               pluginCode="B224" pluginChannelConfigs="{2,2}" pluginFormats="buildAU,buildLV2,buildStandalone,buildVST3">
   <MAINGROUP id="root" name="Borato224">
     <GROUP id="src" name="Source">
