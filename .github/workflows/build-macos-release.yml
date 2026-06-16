@@ -267,6 +267,160 @@ jobs:
             dist/Borato224-v${{ env.BORATO224_VERSION }}-${{ matrix.artifact_suffix }}-Standalone.zip
             dist/${{ matrix.install_notes }}
 
+  build-windows:
+    name: Windows x64 Release
+    runs-on: windows-2025
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Resolve version from CMakeLists.txt
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $content = Get-Content -Raw CMakeLists.txt
+          if ($content -notmatch 'project\(Borato224\s+VERSION\s+([0-9]+\.[0-9]+\.[0-9]+)') {
+            throw 'Could not resolve Borato 224 version from CMakeLists.txt'
+          }
+
+          $version = $Matches[1]
+          Write-Host "Resolved Borato 224 version: $version"
+          "BORATO224_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Configure
+        shell: pwsh
+        run: >
+          cmake -S . -B build
+          -A x64
+          -DBORATO224_FETCH_JUCE=ON
+          -DBORATO224_COPY_PLUGIN_AFTER_BUILD=OFF
+
+      - name: Build Release
+        shell: pwsh
+        run: cmake --build build --config Release --parallel
+
+      - name: Package artifacts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $artifactRoot = Join-Path 'build' 'Borato224_artefacts/Release'
+          $dist = 'dist'
+          New-Item -ItemType Directory -Force -Path $dist | Out-Null
+
+          $vst3 = Join-Path $artifactRoot 'VST3/Borato 224.vst3'
+          $vst3Binary = Join-Path $vst3 'Contents/x86_64-win/Borato 224.vst3'
+          $clap = Join-Path $artifactRoot 'CLAP/Borato 224.clap'
+          $standalone = Join-Path $artifactRoot 'Standalone/Borato 224.exe'
+
+          if (-not (Test-Path -LiteralPath $vst3 -PathType Container)) {
+            throw "VST3 bundle was not generated: $vst3"
+          }
+
+          if (-not (Test-Path -LiteralPath $vst3Binary -PathType Leaf)) {
+            throw "VST3 binary is missing from bundle: $vst3Binary"
+          }
+
+          if (-not (Test-Path -LiteralPath $clap)) {
+            throw "CLAP artifact was not generated: $clap"
+          }
+
+          if (-not (Test-Path -LiteralPath $standalone -PathType Leaf)) {
+            throw "Standalone executable was not generated: $standalone"
+          }
+
+          $base = "Borato224-v$env:BORATO224_VERSION-Windows-x64"
+
+          Compress-Archive -LiteralPath $vst3 -DestinationPath "$dist/$base-VST3.zip" -Force
+          Compress-Archive -LiteralPath $clap -DestinationPath "$dist/$base-CLAP.zip" -Force
+          Compress-Archive -LiteralPath $standalone -DestinationPath "$dist/$base-Standalone.zip" -Force
+
+          @'
+          # Borato 224 Windows install
+
+          These artifacts are unsigned development builds.
+
+          ## VST3
+
+          Unzip `Borato224-v@VER@-Windows-x64-VST3.zip` and copy `Borato 224.vst3` to one of:
+
+          ```text
+          %LOCALAPPDATA%\Programs\Common\VST3\
+          C:\Program Files\Common Files\VST3\
+          ```
+
+          The system folder usually requires administrator permissions.
+
+          ## CLAP
+
+          Unzip `Borato224-v@VER@-Windows-x64-CLAP.zip` and copy `Borato 224.clap` to one of:
+
+          ```text
+          %LOCALAPPDATA%\Programs\Common\CLAP\
+          C:\Program Files\Common Files\CLAP\
+          ```
+
+          ## Standalone
+
+          Unzip `Borato224-v@VER@-Windows-x64-Standalone.zip` and run `Borato 224.exe`.
+
+          After installing VST3 or CLAP, rescan plugins in your DAW.
+          '@ | Set-Content -Path "$dist/INSTALL-Windows-x64.md" -Encoding utf8
+
+          (Get-Content -Raw "$dist/INSTALL-Windows-x64.md").Replace('@VER@', $env:BORATO224_VERSION) |
+            Set-Content -Path "$dist/INSTALL-Windows-x64.md" -Encoding utf8
+
+          Get-ChildItem -Path $dist
+
+      - name: Upload VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v${{ env.BORATO224_VERSION }}-Windows-x64-VST3
+          path: dist/Borato224-v${{ env.BORATO224_VERSION }}-Windows-x64-VST3.zip
+          if-no-files-found: error
+
+      - name: Upload CLAP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v${{ env.BORATO224_VERSION }}-Windows-x64-CLAP
+          path: dist/Borato224-v${{ env.BORATO224_VERSION }}-Windows-x64-CLAP.zip
+          if-no-files-found: error
+
+      - name: Upload Standalone
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v${{ env.BORATO224_VERSION }}-Windows-x64-Standalone
+          path: dist/Borato224-v${{ env.BORATO224_VERSION }}-Windows-x64-Standalone.zip
+          if-no-files-found: error
+
+      - name: Upload install notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v${{ env.BORATO224_VERSION }}-Windows-x64-install-notes
+          path: dist/INSTALL-Windows-x64.md
+          if-no-files-found: error
+
+      - name: Upload release bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Borato224-v${{ env.BORATO224_VERSION }}-Windows-x64-release-assets
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Attach assets to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            dist/Borato224-v${{ env.BORATO224_VERSION }}-Windows-x64-VST3.zip
+            dist/Borato224-v${{ env.BORATO224_VERSION }}-Windows-x64-CLAP.zip
+            dist/Borato224-v${{ env.BORATO224_VERSION }}-Windows-x64-Standalone.zip
+            dist/INSTALL-Windows-x64.md
+
   build-ubuntu:
     name: Ubuntu Release
     runs-on: ubuntu-latest

@@ -267,65 +267,78 @@ The repository includes a release artifact workflow:
 .github/workflows/build-macos-release.yml
 ```
 
-It builds Release artifacts on `macos-15` (Apple Silicon), `macos-15-intel`, and `ubuntu-latest`, downloading JUCE through CMake with `BORATO224_FETCH_JUCE=ON`.
+It builds Release artifacts on `windows-2025` (x64), `macos-15` (Apple Silicon), `macos-15-intel`, and `ubuntu-latest`, downloading JUCE through CMake with `BORATO224_FETCH_JUCE=ON`.
+
+Windows artifacts:
+
+```text
+Borato224-v0.0.5-Windows-x64-VST3.zip
+Borato224-v0.0.5-Windows-x64-CLAP.zip
+Borato224-v0.0.5-Windows-x64-Standalone.zip
+Borato224-v0.0.5-Windows-x64-install-notes
+```
 
 macOS artifacts:
 
 ```text
-Borato224-v0.0.3-macOS-arm64-VST3.zip
-Borato224-v0.0.3-macOS-arm64-CLAP.zip
-Borato224-v0.0.3-macOS-arm64-AU.zip
-Borato224-v0.0.3-macOS-arm64-Standalone.zip
-Borato224-v0.0.3-macOS-arm64-install-notes
-Borato224-v0.0.3-macOS-intel-VST3.zip
-Borato224-v0.0.3-macOS-intel-CLAP.zip
-Borato224-v0.0.3-macOS-intel-AU.zip
-Borato224-v0.0.3-macOS-intel-Standalone.zip
-Borato224-v0.0.3-macOS-intel-install-notes
+Borato224-v0.0.5-macOS-arm64-VST3.zip
+Borato224-v0.0.5-macOS-arm64-CLAP.zip
+Borato224-v0.0.5-macOS-arm64-AU.zip
+Borato224-v0.0.5-macOS-arm64-Standalone.zip
+Borato224-v0.0.5-macOS-arm64-install-notes
+Borato224-v0.0.5-macOS-intel-VST3.zip
+Borato224-v0.0.5-macOS-intel-CLAP.zip
+Borato224-v0.0.5-macOS-intel-AU.zip
+Borato224-v0.0.5-macOS-intel-Standalone.zip
+Borato224-v0.0.5-macOS-intel-install-notes
 ```
 
 Ubuntu artifacts:
 
 ```text
-Borato224-v0.0.3-Ubuntu-VST3.tar.gz
-Borato224-v0.0.3-Ubuntu-CLAP.tar.gz
-Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
-Borato224-v0.0.3-Ubuntu-install-notes
+Borato224-v0.0.5-Ubuntu-VST3.tar.gz
+Borato224-v0.0.5-Ubuntu-CLAP.tar.gz
+Borato224-v0.0.5-Ubuntu-Standalone.tar.gz
+Borato224-v0.0.5-Ubuntu-install-notes
 ```
 
-The workflow runs on pushes to `master`, `release/**`, `ci/**`, version tags such as `v0.0.3`, pull requests to `master`, and manual `workflow_dispatch`.
+The workflow runs on pushes to `master`, `release/**`, `ci/**`, version tags such as `v0.0.5`, pull requests to `master`, and manual `workflow_dispatch`.
 
 To download the files:
 
 1. Open the repository on GitHub.
 2. Go to `Actions`.
 3. Open the latest `Build Release Artifacts` run.
-4. Download `Borato224-v0.0.3-macOS-arm64-release-assets`, `Borato224-v0.0.3-macOS-intel-release-assets`, and/or `Borato224-v0.0.3-Ubuntu-release-assets` from the run summary.
+4. Download `Borato224-v0.0.5-Windows-x64-release-assets`, `Borato224-v0.0.5-macOS-arm64-release-assets`, `Borato224-v0.0.5-macOS-intel-release-assets`, and/or `Borato224-v0.0.5-Ubuntu-release-assets` from the run summary.
 5. Extract the downloaded artifact bundle and attach the contained archives to the GitHub release.
 
 To create release assets automatically, push a version tag:
 
 ```bash
-git tag v0.0.3
-git push origin v0.0.3
+git tag v0.0.5
+git push origin v0.0.5
 ```
 
 The workflow will build Release artifacts and create/update a draft GitHub Release for that tag with:
 
 ```text
-Borato224-v0.0.3-macOS-arm64-VST3.zip
-Borato224-v0.0.3-macOS-arm64-CLAP.zip
-Borato224-v0.0.3-macOS-arm64-AU.zip
-Borato224-v0.0.3-macOS-arm64-Standalone.zip
+Borato224-v0.0.5-Windows-x64-VST3.zip
+Borato224-v0.0.5-Windows-x64-CLAP.zip
+Borato224-v0.0.5-Windows-x64-Standalone.zip
+INSTALL-Windows-x64.md
+Borato224-v0.0.5-macOS-arm64-VST3.zip
+Borato224-v0.0.5-macOS-arm64-CLAP.zip
+Borato224-v0.0.5-macOS-arm64-AU.zip
+Borato224-v0.0.5-macOS-arm64-Standalone.zip
 INSTALL-macOS-arm64.md
-Borato224-v0.0.3-macOS-intel-VST3.zip
-Borato224-v0.0.3-macOS-intel-CLAP.zip
-Borato224-v0.0.3-macOS-intel-AU.zip
-Borato224-v0.0.3-macOS-intel-Standalone.zip
+Borato224-v0.0.5-macOS-intel-VST3.zip
+Borato224-v0.0.5-macOS-intel-CLAP.zip
+Borato224-v0.0.5-macOS-intel-AU.zip
+Borato224-v0.0.5-macOS-intel-Standalone.zip
 INSTALL-macOS-intel.md
-Borato224-v0.0.3-Ubuntu-VST3.tar.gz
-Borato224-v0.0.3-Ubuntu-CLAP.tar.gz
-Borato224-v0.0.3-Ubuntu-Standalone.tar.gz
+Borato224-v0.0.5-Ubuntu-VST3.tar.gz
+Borato224-v0.0.5-Ubuntu-CLAP.tar.gz
+Borato224-v0.0.5-Ubuntu-Standalone.tar.gz
 INSTALL-Ubuntu.md
 ```
 
