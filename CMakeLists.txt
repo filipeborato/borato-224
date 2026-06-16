@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(Borato224 VERSION 0.0.4 LANGUAGES C CXX)
+project(Borato224 VERSION 0.0.5 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -89,7 +89,7 @@ if(BORATO224_CLAP_FROM_JUCER)
             JUCE_WEB_BROWSER=0
             JUCE_USE_CURL=0
             JucePlugin_Name="Borato 224"
-            JucePlugin_Manufacturer="Borato Audio"
+            JucePlugin_Manufacturer="Borato Company"
             JucePlugin_ManufacturerWebsite="https://boratoaudio.com"
             JucePlugin_VersionString="${PROJECT_VERSION}"
             JucePlugin_Desc=""
@@ -138,7 +138,7 @@ if(WIN32)
 endif()
 
 juce_add_plugin(Borato224
-    COMPANY_NAME "Borato Audio"
+    COMPANY_NAME "Borato Company"
     BUNDLE_ID com.boratoaudio.borato224
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE

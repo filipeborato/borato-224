@@ -464,7 +464,7 @@ void Borato224AudioProcessorEditor::drawPanel(juce::Graphics& g)
     g.drawRoundedRectangle(faderBay, 8.0f, 1.5f);
 
     g.setFont(juce::Font(juce::FontOptions(mapRect(0, 0, 0, 18).getHeight())));
-    g.drawText("BORATO AUDIO INC.", mapRect(170.0f, 1138.0f, 260.0f, 26.0f), juce::Justification::centredLeft);
+    g.drawText("BORATO COMPANY", mapRect(170.0f, 1138.0f, 260.0f, 26.0f), juce::Justification::centredLeft);
     g.drawText("MADE IN BRAZIL", mapRect(1160.0f, 1138.0f, 210.0f, 26.0f), juce::Justification::centredLeft);
     g.drawText("1978", mapRect(1375.0f, 1138.0f, 80.0f, 26.0f), juce::Justification::centredLeft);
 }
