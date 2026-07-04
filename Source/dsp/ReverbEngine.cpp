@@ -1,4 +1,4 @@
-#include "SimpleReverb.h"
+#include "ReverbEngine.h"
 
 namespace
 {
@@ -61,19 +61,19 @@ float finiteOr(float value, float fallback) noexcept
 }
 }
 
-void SimpleReverb::DelayLine::prepare(int samples)
+void ReverbEngine::DelayLine::prepare(int samples)
 {
     buffer.assign((size_t) juce::jmax(4, samples), 0.0f);
     writePosition = 0;
 }
 
-void SimpleReverb::DelayLine::reset()
+void ReverbEngine::DelayLine::reset()
 {
     std::fill(buffer.begin(), buffer.end(), 0.0f);
     writePosition = 0;
 }
 
-float SimpleReverb::DelayLine::read(float delaySamples) const
+float ReverbEngine::DelayLine::read(float delaySamples) const
 {
     const int size = (int) buffer.size();
     if (size <= 1)
@@ -94,7 +94,7 @@ float SimpleReverb::DelayLine::read(float delaySamples) const
     return buffer[(size_t) index0] + frac * (buffer[(size_t) index1] - buffer[(size_t) index0]);
 }
 
-void SimpleReverb::DelayLine::push(float sample)
+void ReverbEngine::DelayLine::push(float sample)
 {
     const int size = (int) buffer.size();
     if (size <= 0)
@@ -108,18 +108,18 @@ void SimpleReverb::DelayLine::push(float sample)
         writePosition = 0;
 }
 
-void SimpleReverb::Allpass::prepare(double sampleRate, float delayMs)
+void ReverbEngine::Allpass::prepare(double sampleRate, float delayMs)
 {
     delaySamples = (float) sampleRate * delayMs * 0.001f;
     delay.prepare((int) std::ceil(delaySamples) + 8);
 }
 
-void SimpleReverb::Allpass::reset()
+void ReverbEngine::Allpass::reset()
 {
     delay.reset();
 }
 
-float SimpleReverb::Allpass::process(float input)
+float ReverbEngine::Allpass::process(float input)
 {
     const float delayed = delay.read(delaySamples);
     const float value = input + delayed * gain;
@@ -127,7 +127,7 @@ float SimpleReverb::Allpass::process(float input)
     return delayed - value * gain;
 }
 
-void SimpleReverb::prepare(double sampleRate, int maximumBlockSize, int channels)
+void ReverbEngine::prepare(double sampleRate, int maximumBlockSize, int channels)
 {
     currentSampleRate = sampleRate > 0.0 ? sampleRate : 44100.0;
     channelCount = juce::jlimit(1, maxChannels, channels);
@@ -167,7 +167,7 @@ void SimpleReverb::prepare(double sampleRate, int maximumBlockSize, int channels
     isPrepared = true;
 }
 
-void SimpleReverb::reset()
+void ReverbEngine::reset()
 {
     preDelayBuffer.clear();
     preDelayWritePosition = 0;
@@ -186,7 +186,7 @@ void SimpleReverb::reset()
             diffuser.reset();
 }
 
-void SimpleReverb::process(juce::AudioBuffer<float>& buffer, int program, float decaySeconds, float preDelayMs,
+void ReverbEngine::process(juce::AudioBuffer<float>& buffer, int program, float decaySeconds, float preDelayMs,
                            float bassDb, float midDb, float trebleDecayDb, float crossoverHz, float depthDb)
 {
     if (! isPrepared || buffer.getNumChannels() <= 0 || buffer.getNumSamples() <= 0)
@@ -241,7 +241,7 @@ void SimpleReverb::process(juce::AudioBuffer<float>& buffer, int program, float 
         buffer.clear(ch, 0, samples);
 }
 
-void SimpleReverb::updatePreDelay(float preDelayMs)
+void ReverbEngine::updatePreDelay(float preDelayMs)
 {
     if (preDelayBuffer.getNumSamples() <= 0)
     {
@@ -253,7 +253,7 @@ void SimpleReverb::updatePreDelay(float preDelayMs)
     preDelaySamples = juce::jlimit(0, maxDelay, (int) std::round((preDelayMs * 0.001f) * (float) currentSampleRate));
 }
 
-void SimpleReverb::updateProgramShape(int program)
+void ReverbEngine::updateProgramShape(int program)
 {
     if (program == currentProgram)
         return;
@@ -267,7 +267,7 @@ void SimpleReverb::updateProgramShape(int program)
             inputDiffusers[(size_t) ch][(size_t) i].gain = currentShape.diffusion;
 }
 
-float SimpleReverb::processPreDelayAndEarly(int channel, float input) noexcept
+float ReverbEngine::processPreDelayAndEarly(int channel, float input) noexcept
 {
     if (channel < 0 || channel >= preDelayBuffer.getNumChannels() || preDelayBuffer.getNumSamples() <= 1)
         return input;
@@ -302,7 +302,7 @@ float SimpleReverb::processPreDelayAndEarly(int channel, float input) noexcept
     return delayed * 0.82f + early * currentShape.earlyLevel;
 }
 
-void SimpleReverb::updateRuntimeParameters(float decaySeconds, float bassDb, float midDb,
+void ReverbEngine::updateRuntimeParameters(float decaySeconds, float bassDb, float midDb,
                                            float trebleDecayDb, float crossoverHz, float depthDb) noexcept
 {
     decaySeconds = finiteOr(decaySeconds, 2.24f);
@@ -331,7 +331,7 @@ void SimpleReverb::updateRuntimeParameters(float decaySeconds, float bassDb, flo
     }
 }
 
-juce::Point<float> SimpleReverb::processTankSample(float leftIn, float rightIn) noexcept
+juce::Point<float> ReverbEngine::processTankSample(float leftIn, float rightIn) noexcept
 {
     if (currentProgram == 6 && --randomCountdown <= 0)
     {
@@ -414,7 +414,7 @@ juce::Point<float> SimpleReverb::processTankSample(float leftIn, float rightIn) 
     };
 }
 
-SimpleReverb::ProgramShape SimpleReverb::getProgramShape(int program) noexcept
+ReverbEngine::ProgramShape ReverbEngine::getProgramShape(int program) noexcept
 {
     switch (juce::jlimit(0, 7, program))
     {

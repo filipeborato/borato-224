@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(Borato224 VERSION 0.0.5 LANGUAGES C CXX)
+project(Borato224 VERSION 0.0.6 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,6 +10,7 @@ option(BORATO224_FETCH_JUCE "Download JUCE if it is not found locally" OFF)
 option(BORATO224_COPY_PLUGIN_AFTER_BUILD "Copy the built plugin to the system plugin folder after build" OFF)
 option(BORATO224_BUILD_CLAP "Build the CLAP plugin through clap-juce-extensions" ON)
 option(BORATO224_CLAP_FROM_JUCER "Build only a CLAP wrapper from the Projucer-generated Shared Code library" OFF)
+option(BORATO224_BUILD_TESTS "Build Borato 224 state-management tests" OFF)
 set(BORATO224_JUCE_SOURCE_DIR "" CACHE PATH "Path to a JUCE source checkout")
 set(BORATO224_JUCER_CONFIGURATION "Release" CACHE STRING "Projucer Shared Code configuration to link when BORATO224_CLAP_FROM_JUCER is enabled")
 set(BORATO224_JUCER_SHARED_CODE_LIB "" CACHE FILEPATH "Path to the Projucer-generated Shared Code library")
@@ -172,8 +173,20 @@ target_sources(Borato224
         Source/PluginEditor.h
         Source/PluginParameters.cpp
         Source/PluginParameters.h
-        Source/SimpleReverb.cpp
-        Source/SimpleReverb.h
+        Source/dsp/ReverbEngine.cpp
+        Source/dsp/ReverbEngine.h
+        Source/ui/Borato224LookAndFeel.cpp
+        Source/ui/Borato224LookAndFeel.h
+        Source/ui/DisplayComponent.cpp
+        Source/ui/DisplayComponent.h
+        Source/ui/ProgramButtonsComponent.cpp
+        Source/ui/ProgramButtonsComponent.h
+        Source/ui/SystemButtonsComponent.cpp
+        Source/ui/SystemButtonsComponent.h
+        Source/ui/FaderBayComponent.cpp
+        Source/ui/FaderBayComponent.h
+        Source/ui/PcbComponent.cpp
+        Source/ui/PcbComponent.h
 )
 
 target_link_libraries(Borato224
@@ -203,4 +216,16 @@ if(BORATO224_BUILD_CLAP)
     clap_juce_extensions_plugin(TARGET Borato224
         CLAP_ID "com.boratoaudio.borato224"
         CLAP_FEATURES audio-effect reverb stereo)
+endif()
+
+if(BORATO224_BUILD_TESTS)
+    enable_testing()
+    juce_add_console_app(Borato224StateTests PRODUCT_NAME "Borato 224 State Tests")
+    target_sources(Borato224StateTests PRIVATE tests/StateTests.cpp)
+    target_include_directories(Borato224StateTests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/Source"
+        "${CMAKE_BINARY_DIR}/Borato224_artefacts/JuceLibraryCode"
+        "${CMAKE_BINARY_DIR}/juce_binarydata_Borato224Assets/JuceLibraryCode")
+    target_link_libraries(Borato224StateTests PRIVATE Borato224 juce::juce_audio_utils)
+    add_test(NAME Borato224StateTests COMMAND Borato224StateTests)
 endif()

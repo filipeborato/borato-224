@@ -2,7 +2,7 @@
 
 #include <JuceHeader.h>
 
-class SimpleReverb
+class ReverbEngine
 {
 public:
     void prepare(double sampleRate, int maximumBlockSize, int channels);

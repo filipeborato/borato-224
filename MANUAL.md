@@ -11,14 +11,14 @@ The `PROGRAM` buttons select the base reverb behavior:
 - `AMBI`: short ambience for space without an obvious long tail.
 - `SPACE`: large, expansive and diffuse reverb.
 - `RANDOM`: generates a new preset variation and adds a less static modulation character.
-- `USER`: neutral slot for manual settings.
+- `USER`: your custom "Favorite Reverb" slot. To save your current fader settings into this slot, press the `STORE` button.
 
 ## System
 
-- `STORE`: saves the current state as an internal snapshot.
-- `RECALL`: restores the saved snapshot.
-- `A/B`: switches between two working states.
-- `COMPARE`: compares the edited state against the stored state.
+- `STORE`: saves a global snapshot of all settings (for RECALL/COMPARE) AND simultaneously saves your current reverb faders into the `USER` preset slot.
+- `RECALL`: restores the entire global snapshot, including the selected program, faders, and input/output gains.
+- `A/B`: switches between two independent working states, preserving all parameters (like having two parallel plugins).
+- `COMPARE`: press and hold to temporarily hear the stored global snapshot without losing your current tweaks.
 - `EDIT`: shows the selected parameter on the LED display.
 - `BYPASS`: turns the effect on/off with a short fade to avoid clicks.
 - `VALUE -`: decreases the selected parameter.
