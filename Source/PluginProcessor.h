@@ -2,7 +2,7 @@
 
 #include <JuceHeader.h>
 #include "PluginParameters.h"
-#include "SimpleReverb.h"
+#include "dsp/ReverbEngine.h"
 
 class Borato224AudioProcessor final : public juce::AudioProcessor
 {
@@ -42,7 +42,8 @@ public:
     void swapAB();
     void beginCompare();
     void endCompare();
-    bool getABSlot() const { return abSlotB; }
+    bool getABSlot() const noexcept { return abSlotB.load(std::memory_order_relaxed); }
+    bool isComparing() const noexcept { return comparing.load(std::memory_order_relaxed); }
 
 private:
     using ParameterMap = std::map<juce::String, float>;
@@ -52,7 +53,7 @@ private:
     static void applyParameterMap(juce::AudioProcessorValueTreeState& state, const ParameterMap& map);
     static juce::XmlElement createParameterMapXml(const juce::String& tagName, const ParameterMap& map);
     static ParameterMap parseParameterMapXml(const juce::XmlElement& element);
-    static std::unique_ptr<juce::XmlElement> createPersistedStateXml(const juce::AudioProcessorValueTreeState& state,
+    static std::unique_ptr<juce::XmlElement> createPersistedStateXml(juce::AudioProcessorValueTreeState& state,
                                                                     const ParameterMap& storedSnapshot,
                                                                     const ParameterMap& compareSnapshot,
                                                                     const ParameterMap& abA,
@@ -75,7 +76,7 @@ private:
     std::atomic<float>* outputParam { nullptr };
     std::atomic<float>* bypassParam { nullptr };
 
-    SimpleReverb reverb;
+    ReverbEngine reverb;
     juce::AudioBuffer<float> wetBuffer;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> mixSmooth;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> inputSmooth;
@@ -86,9 +87,12 @@ private:
     ParameterMap compareSnapshot;
     ParameterMap abA;
     ParameterMap abB;
+    juce::CriticalSection snapshotLock;
     juce::Random randomPresetRng { 0x2242026 };
-    bool abSlotB { false };
-    bool comparing { false };
+    std::atomic<bool> abSlotB { false };
+    std::atomic<bool> comparing { false };
+    std::atomic<bool> applyingPreset { false };
+    ProgramPreset customUserPreset;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Borato224AudioProcessor)
 };

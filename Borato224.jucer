@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="B224" name="Borato224" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" companyName="Borato Company"
-              companyWebsite="borato.audio" version="0.0.5" cppLanguageStandard="20"
+              companyWebsite="borato.audio" version="0.0.6" cppLanguageStandard="20"
               bundleIdentifier="com.boratoaudio.borato224" pluginName="Borato 224"
               pluginDesc="Borato 224" pluginManufacturer="Borato Company" pluginManufacturerCode="Bora"
               pluginCode="B224" pluginChannelConfigs="{2,2}" pluginFormats="buildAU,buildLV2,buildStandalone,buildVST3">
@@ -19,9 +19,33 @@
             file="Source/PluginParameters.cpp"/>
       <FILE id="paramsH" name="PluginParameters.h" compile="0" resource="0"
             file="Source/PluginParameters.h"/>
-      <FILE id="revCpp" name="SimpleReverb.cpp" compile="1" resource="0"
-            file="Source/SimpleReverb.cpp"/>
-      <FILE id="revH" name="SimpleReverb.h" compile="0" resource="0" file="Source/SimpleReverb.h"/>
+      <FILE id="revCpp" name="ReverbEngine.cpp" compile="1" resource="0"
+            file="Source/dsp/ReverbEngine.cpp"/>
+      <FILE id="revH" name="ReverbEngine.h" compile="0" resource="0" file="Source/dsp/ReverbEngine.h"/>
+      <FILE id="lnfCpp" name="Borato224LookAndFeel.cpp" compile="1" resource="0"
+            file="Source/ui/Borato224LookAndFeel.cpp"/>
+      <FILE id="lnfH" name="Borato224LookAndFeel.h" compile="0" resource="0"
+            file="Source/ui/Borato224LookAndFeel.h"/>
+      <FILE id="displayCpp" name="DisplayComponent.cpp" compile="1" resource="0"
+            file="Source/ui/DisplayComponent.cpp"/>
+      <FILE id="displayH" name="DisplayComponent.h" compile="0" resource="0"
+            file="Source/ui/DisplayComponent.h"/>
+      <FILE id="progBtnCpp" name="ProgramButtonsComponent.cpp" compile="1" resource="0"
+            file="Source/ui/ProgramButtonsComponent.cpp"/>
+      <FILE id="progBtnH" name="ProgramButtonsComponent.h" compile="0" resource="0"
+            file="Source/ui/ProgramButtonsComponent.h"/>
+      <FILE id="sysBtnCpp" name="SystemButtonsComponent.cpp" compile="1" resource="0"
+            file="Source/ui/SystemButtonsComponent.cpp"/>
+      <FILE id="sysBtnH" name="SystemButtonsComponent.h" compile="0" resource="0"
+            file="Source/ui/SystemButtonsComponent.h"/>
+      <FILE id="faderCpp" name="FaderBayComponent.cpp" compile="1" resource="0"
+            file="Source/ui/FaderBayComponent.cpp"/>
+      <FILE id="faderH" name="FaderBayComponent.h" compile="0" resource="0"
+            file="Source/ui/FaderBayComponent.h"/>
+      <FILE id="pcbCpp" name="PcbComponent.cpp" compile="1" resource="0"
+            file="Source/ui/PcbComponent.cpp"/>
+      <FILE id="pcbH" name="PcbComponent.h" compile="0" resource="0"
+            file="Source/ui/PcbComponent.h"/>
     </GROUP>
     <GROUP id="assets" name="assets">
       <FILE id="lexicon" name="lexicon_224.svg" compile="0" resource="1"

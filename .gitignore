@@ -2,6 +2,7 @@
 build*/
 Builds/
 JuceLibraryCode/
+dist-win/
 
 # CMake
 CMakeCache.txt
@@ -49,3 +50,4 @@ DerivedData/
 Thumbs.db
 *.tmp
 *.log
+.mimocode/
